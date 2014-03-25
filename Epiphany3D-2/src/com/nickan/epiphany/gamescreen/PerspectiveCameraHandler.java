@@ -9,12 +9,12 @@ import com.nickan.epiphany.framework.math.Euler;
  * @author Nickan
  *
  */
-public class PerpectiveCameraHandler {
+public class PerspectiveCameraHandler {
 	PerspectiveCamera cam;
 	
 	Vector3 rotation;
 	
-	public PerpectiveCameraHandler(PerspectiveCamera cam) {
+	public PerspectiveCameraHandler(PerspectiveCamera cam) {
 		this.cam = cam;
 		rotation = new Vector3();
 	}
