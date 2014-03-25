@@ -1,28 +1,42 @@
 package com.nickan.epiphany.model;
 
 import com.badlogic.gdx.math.Vector3;
+import com.nickan.epiphany.framework.math.Euler;
 
 public abstract class MoveableEntity extends Entity {
 	float speed;
-	Vector3 rotation;
-	Vector3 velocity;
+	float forwardSpeed;
+	float sideSpeed;
 	
-	private static Vector3 tempVec1 = new Vector3();
-	private static Vector3 tempVec2 = new Vector3();
+	/** The view vector of the entity */
+	Vector3 forwardVector;
+	Vector3 rightVector;
+	
+	protected static Vector3 tempVec1 = new Vector3();
+	protected static Vector3 tempVec2 = new Vector3();
+	protected static Vector3 tempVec3 = new Vector3();
+	
+	public enum Movement { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
+	private Movement movement = Movement.STOP;
 
-	public MoveableEntity(Vector3 position, Vector3 rotation, Dimension3D dimension, float speed) {
+	public MoveableEntity(Vector3 position, Dimension3D dimension, float speed) {
 		super(position, dimension);
-		this.rotation = rotation;
 		this.speed = speed;
-		this.velocity = new Vector3();
+		
+		// Default is viewing to the right
+		this.forwardVector = new Vector3(1.0f, 0, 0);
 	}
 	
 	protected void update(float delta) {
-		tempVec1.set(velocity);
-		position.add(tempVec1.scl(speed * delta));
+		tempVec1.set(forwardVector);
 		
-		// Set to zero
-		tempVec1.set(Vector3.Zero);
+		// Get the right vector
+		tempVec2.set(tempVec1).crs(Vector3.Y);
+		
+		// Set the velocity
+		tempVec3.set(tempVec1.scl(forwardSpeed).add(tempVec2.scl(sideSpeed)));
+
+		position.add(tempVec3);
 	}
 	
 	public boolean isInRange(Vector3 target, float range) {
@@ -49,12 +63,54 @@ public abstract class MoveableEntity extends Entity {
 		position.add(tempVec1.scl(speed * delta));
 	}
 	
-	public Vector3 getVelocity() {
-		return velocity;
+	public void setForwardVector(Vector3 camDirection) {
+		forwardVector.set(camDirection);
+		
+		// Set the elevation movement to 0
+		forwardVector.y = 0;
+		forwardVector.nor();
 	}
 	
-	public Vector3 getRotation() {
-		return rotation;
+	public Vector3 getForwardVector() {
+		return forwardVector;
 	}
-
+	
+	public Vector3 getRightVector() {
+		return Euler.getOrthogonalAxes(forwardVector, Vector3.Y);
+	}
+	
+	public void setMovement(Movement movement) {
+		switch (movement) {
+		case FORWARD: forwardSpeed = speed;
+			break;
+		case BACKWARD: forwardSpeed = -speed;
+			break;
+		case LEFT: sideSpeed = -speed;
+			break;
+		case RIGHT: sideSpeed = speed;
+			break;
+		case STOP:
+			forwardSpeed = 0;
+			sideSpeed = 0;
+			break;
+		}
+		
+		// Detects whether there is movement changed
+		if (this.movement != movement) {
+			movementChanged(movement);
+			this.movement = movement;
+		}
+	}
+	
+	/**
+	 * Will be called whenever the movement has changed
+	 */
+	public abstract void movementChanged(Movement movement);
+	
+	public Movement getMovement() {
+		return movement;
+	}
+	
+	
+	
 }
