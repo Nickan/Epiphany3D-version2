@@ -16,6 +16,7 @@ public class AnimationHandler {
 	private Character character;
 	
 	private Action currentAction;
+	private static final Vector3 aniForwardVector = new Vector3();
 	
 	/** For calculation of the matrix, I might change this later */
 	private final static Matrix4 aniTempMatrix = new Matrix4();
@@ -47,7 +48,7 @@ public class AnimationHandler {
 		this.aniController = aniController;
 
 		standingPlaySpeed = standingFrameNum / DEFAULT_FPS;
-		runningPlaySpeed = runningFrameNum / DEFAULT_FPS;
+		runningPlaySpeed = (runningFrameNum / DEFAULT_FPS) * 2;
 		attackAnimationPlaySpeed = attackingFrameNum / DEFAULT_FPS;
 	}
 	
@@ -63,7 +64,7 @@ public class AnimationHandler {
 		if (currentAction == Action.ATTACKING)
 			handleAttackUpdate(0);
 
-		updateAnimationMatrix(character.getPosition(), character.getRotation(), aniController.target.transform);
+		updateAnimationMatrix();
 		aniController.update(delta);
 	}
 	
@@ -163,14 +164,34 @@ public class AnimationHandler {
 	 * @param rotation - Rotation of the character
 	 * @param aniMatrix - The matrix from ModelInstance
 	 */
-	private void updateAnimationMatrix(Vector3 position, Vector3 rotation, Matrix4 aniMatrix) {
+	private void updateAnimationMatrix() {
+		Matrix4 aniMatrix = aniController.target.transform;
+		
+		Vector3 position = character.getPosition();
 		// Set the position
 		aniMatrix.idt();
 		aniMatrix.translate(position.x, position.y, position.z);
 
 		// Set the rotation
 		aniTempMatrix.idt();
-		aniTempMatrix.rotate(Vector3.Y, rotation.y + 90);
+		
+		
+		switch (character.getMovement()) {
+		case FORWARD: aniForwardVector.set(character.getForwardVector());
+			break;
+		case BACKWARD: aniForwardVector.set(character.getForwardVector()).scl(-1);
+			break;
+		case LEFT: aniForwardVector.set(character.getRightVector()).scl(-1);
+			break;
+		case RIGHT: aniForwardVector.set(character.getRightVector());
+			break;
+		default: aniForwardVector.set(character.getForwardVector());
+			break;
+		}
+		
+		// Get the backward value of the set forward vector
+		aniTempMatrix.setToLookAt(aniForwardVector.scl(-1), Vector3.Y);
+		aniTempMatrix.inv();
 
 		// Apply the value to the Matrix of the animation
 		aniMatrix.mul(aniTempMatrix);
