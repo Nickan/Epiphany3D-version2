@@ -2,7 +2,6 @@ package com.nickan.epiphany.gamescreen;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
-import com.nickan.epiphany.framework.math.Euler;
 
 /**
  * Has basic camera operations, for now chasing the position given
@@ -12,23 +11,33 @@ import com.nickan.epiphany.framework.math.Euler;
 public class PerspectiveCameraHandler {
 	PerspectiveCamera cam;
 	
-	Vector3 rotation;
+	/** Determines how far away the camera from the basePosition */
+	private float zoomScale = 5.0f;
+
+	private static final Vector3 tempVector = new Vector3();
 	
 	public PerspectiveCameraHandler(PerspectiveCamera cam) {
 		this.cam = cam;
-		rotation = new Vector3();
 	}
 	
-	public void update(Vector3 position, float delta) {
-		cam.position.set(position);
-		
+	public void update(Vector3 basePosition, Vector3 direction, float delta) {
+		cam.direction.set(direction);
+		setPosition(basePosition, delta);
 		cam.update();
 	}
 	
-	public void setViewRotation(float x, float y, float z) {
-		rotation.set(x, y, z);
+	private void setPosition(Vector3 basePosition, float delta) {
+		tempVector.set(cam.direction);
 		
-		// Set the rotation, normalize and reverse the direction
-		cam.direction.set(Euler.toAxes(rotation)).nor().scl(-1);
+		// Reverse the direction
+		tempVector.scl(-1);
+		tempVector.scl(zoomScale);
+		
+		// Add the base position
+		tempVector.add(basePosition);
+		
+		// Move up the camera a bit
+		tempVector.y += 1.0f;
+		cam.position.set(tempVector);
 	}
 }
