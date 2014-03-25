@@ -43,6 +43,8 @@ public class WorldRenderer {
 	/** Array of animation handlers for the character */
 	private Array<AnimationHandler> aniHandlers;
 	
+	PerspectiveCameraHandler camHandler;
+	
 	public WorldRenderer(World world) {
 		this.world = world;
 		worldModelInstances = new Array<ModelInstance>();
@@ -69,6 +71,8 @@ public class WorldRenderer {
 		perspectiveCam.near = 1.0f;
 		perspectiveCam.far = 300.0f;
 		perspectiveCam.update();
+		
+		camHandler = new PerspectiveCameraHandler(perspectiveCam);
 		
 		modelBatch = new ModelBatch();
 		
@@ -147,6 +151,7 @@ public class WorldRenderer {
 			handler.update(delta);
 		}
 		
+		
 		// Clear the background, using Gdx.gl10 will give weird result
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		Gdx.gl.glClearColor(0, 0, 0, 1.0f);
@@ -158,6 +163,8 @@ public class WorldRenderer {
 		modelBatch.render(worldModelInstances, environment);
 		
 		modelBatch.end();
+		
+		camHandler.update(world.player.getPosition(), world.getCamDirection(), delta);
 	}
 	
 	public void resize(int width, int height) {

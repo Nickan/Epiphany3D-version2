@@ -1,6 +1,9 @@
 package com.nickan.epiphany.gamescreen;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector2;
+import com.nickan.epiphany.model.MoveableEntity.Movement;
 
 /**
  * Controls the World, but in constructor, only the WorldRenderer is passed, as the WorldRenderer has the copy
@@ -12,21 +15,35 @@ public class WorldController implements InputProcessor {
 	World world;
 	WorldRenderer worldRenderer;
 	
+	/** Will be used for the amount of dragged length */
+	Vector2 previousTouch;
+	
 	public WorldController(WorldRenderer worldRenderer) {
 		this.worldRenderer = worldRenderer;
 		this.world = worldRenderer.world;
+		
+		previousTouch = new Vector2();
 	}
 	
 	@Override
 	public boolean keyDown(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
+		switch (keycode) {
+		case Keys.W: world.player.setMovement(Movement.FORWARD);
+			break;
+		case Keys.S: world.player.setMovement(Movement.BACKWARD);
+			break;
+		case Keys.A: world.player.setMovement(Movement.LEFT);
+			break;
+		case Keys.D: world.player.setMovement(Movement.RIGHT);
+			break;
+		}
+		return true;
 	}
 	
 	@Override
 	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
+		world.player.setMovement(Movement.STOP);
+		return true;
 	}
 	
 	@Override
@@ -37,19 +54,22 @@ public class WorldController implements InputProcessor {
 	
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
+		previousTouch.set(screenX, screenY);
+		return true;
 	}
 	
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
+		float scrolledX = screenX - previousTouch.x;
+		float scrolledY = screenY - previousTouch.y;
+		previousTouch.set(screenX, screenY);
+		
+		world.incCamRotation(scrolledX, scrolledY, 0);
 		return false;
 	}
 	
