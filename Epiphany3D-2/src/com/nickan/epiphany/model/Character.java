@@ -11,14 +11,23 @@ public class Character extends MoveableEntity {
 	public enum Action { IDLE, RUNNING, ATTACKING, DEAD };
 	private Action currentAction = Action.IDLE;
 
-	public Character(Vector3 position, Vector3 rotation, Dimension3D dimension, float speed) {
-		super(position, rotation, dimension, speed);
+	public Character(Vector3 position, Dimension3D dimension, float speed) {
+		super(position, dimension, speed);
 		stateMachine = new StateMachine<Character>(this);
 	}
 	
 	public void update(float delta) {
 		stateMachine.update(delta);
 		super.update(delta);
+	}
+	
+	@Override
+	public void movementChanged(Movement movement) {
+		if (movement == Movement.STOP) {
+			currentAction = Action.IDLE;
+		} else {
+			currentAction = Action.RUNNING;
+		}
 	}
 	
 	/**
@@ -29,14 +38,17 @@ public class Character extends MoveableEntity {
 		return currentAction;
 	}
 
+	public int getLife() {
+		return 0;
+	}
+	
+	
 	@Override
 	public boolean handleMessage(Message message) {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
 	
-	public int getLife() {
-		return 0;
-	}
 
 }
