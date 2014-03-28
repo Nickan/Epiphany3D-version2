@@ -1,7 +1,10 @@
 package com.nickan.epiphany.framework.finitestatemachine.messagingsystem;
 
 public class Message {
-	public enum MessageType { GET_LOCATION };
+	/** A set of message types include the player's command */
+	public enum MessageType { /** Player's command */ PLAYER_ATTACK, PLAYER_MOVE, 
+		ATTACK, ATTACK_RESPONSE,
+		};
 	
 	public int senderId;
 	public int receiverId;
@@ -13,9 +16,8 @@ public class Message {
 		this.senderId = 0;
 		this.receiverId = 0;
 		this.dispatchTime = 0;
-		this.type = MessageType.GET_LOCATION;
+		this.type = MessageType.PLAYER_ATTACK;
 		this.extraInfo = null;
 	}
-	
 	
 }
