@@ -16,10 +16,12 @@ public class AnimationHandler {
 	private Character character;
 	
 	private Action currentAction;
-	private static final Vector3 aniForwardVector = new Vector3();
 	
 	/** For calculation of the matrix, I might change this later */
 	private final static Matrix4 aniTempMatrix = new Matrix4();
+	
+	/** The set lookAt vector for the animation */
+	private Vector3 lookAtVector;
 
 	/** 
 	 * Default play speed, maybe based on blender's play speed. No reason to change or modify it. 
@@ -28,9 +30,9 @@ public class AnimationHandler {
 	private static final float DEFAULT_FPS = 24.0f;
 
 	/** Defines the animation play time will be played in one second */
-	private final float attackAnimationPlaySpeed;
-	private final float standingPlaySpeed;
-	private final float runningPlaySpeed;
+	private float attackAnimationPlaySpeed;
+	private float standingPlaySpeed;
+	private float runningPlaySpeed;
 
 	/** Make the scale global for now... To be changed later if needed */
 	public float aniScale = 1f;
@@ -48,9 +50,40 @@ public class AnimationHandler {
 		this.aniController = aniController;
 
 		standingPlaySpeed = standingFrameNum / DEFAULT_FPS;
-		runningPlaySpeed = (runningFrameNum / DEFAULT_FPS) * 2;
+		runningPlaySpeed = runningFrameNum / DEFAULT_FPS;
 		attackAnimationPlaySpeed = attackingFrameNum / DEFAULT_FPS;
+		
+		lookAtVector = new Vector3(character.getForwardVector());
+		
+		setAttackAnimationSpeed(character.getAttackDelay());
 	}
+	
+	/**
+	 * Set the attack counter value and animation to make them synchronize to attack delay of the character.
+	 * If the attack delay is greater than one, the difference of one to the attack delay will just make the animation wait to attack.
+	 * otherwise the delay time to play the attack animation is just half the attack delay.
+	 */
+	public void setAttackAnimationSpeed(float attackDelay) {
+		float attackTimeToLandHit = attackDelay / 2f;
+
+		/*
+		 * Set the default attack delay of the animation to one second, to prevent boring very slow attack animation,
+		 * but if the attack delay is lower than one second, set the attack delay of the animation according to it.
+		 */
+		if (attackDelay >= DEFAULT_ATTACK_SPEED) {	
+			attackPlayTime = attackDelay - DEFAULT_ATTACK_SPEED / 2;
+			attackPlaySpeed = attackAnimationPlaySpeed;
+		} else {
+			attackPlayTime = attackTimeToLandHit;
+			attackPlaySpeed = attackAnimationPlaySpeed / attackDelay;
+		}
+
+	}
+	
+	public void scaleRunningPlaySpeed(float scale) {
+		runningPlaySpeed *= scale;
+	}
+	
 	
 	public void update(float delta) {
 		// If the character's current action has changed
@@ -62,7 +95,7 @@ public class AnimationHandler {
 		}
 		
 		if (currentAction == Action.ATTACKING)
-			handleAttackUpdate(0);
+			handleAttackUpdate(character.getAttackTimer());
 
 		updateAnimationMatrix();
 		aniController.update(delta);
@@ -72,6 +105,7 @@ public class AnimationHandler {
 		// Change the animation corresponding to the new action
 		switch (action) {
 		case ATTACKING:
+			// Set the pose of the character to ready to attack
 			aniController.setAnimation("Attacking");
 			aniController.update(1000);
 			firstAttack = true;
@@ -126,36 +160,12 @@ public class AnimationHandler {
 
 	private void playAttackAnimation() {
 		// Finish the currently updating attack to reset it
-	//	aniController.update(1000);
 		aniController.setAnimation("Standing");
 		aniController.update(1000);
 		aniController.setAnimation("Attacking", 1, attackPlaySpeed, null);
-	//	aniController.animate("Attacking", 1, attackPlaySpeed, null, 0);
-		
-		//...
-		System.out.println("Attack!!!");
 	}
 
-	/**
-	 * Set the attack counter value and animation to make them synchronize to attack delay of the character.
-	 * If the attack delay is greater than one, the difference of one to the attack delay will just make the animation wait to attack.
-	 * otherwise the delay time to play the attack animation is just half the attack delay.
-	 */
-	private void setAttackAnimationSpeed(float attackDelay) {
-		float attackTimeToLandHit = attackDelay / 2f;
-
-		/*
-		 * Set the default attack delay of the animation to one second, to prevent boring very slow attack animation,
-		 * but if the attack delay is lower than one second, set the attack delay of the animation according to it.
-		 */
-		if (attackDelay > DEFAULT_ATTACK_SPEED) {	
-			attackPlayTime = attackDelay - DEFAULT_ATTACK_SPEED / 2;
-			attackPlaySpeed = attackAnimationPlaySpeed;
-		} else {
-			attackPlayTime = attackTimeToLandHit;
-			attackPlaySpeed = attackAnimationPlaySpeed / attackDelay;
-		}
-	}
+	
 
 	/**
 	 * Updates and manipulates the ModelInstance's matrix to be passed here
@@ -176,21 +186,11 @@ public class AnimationHandler {
 		aniTempMatrix.idt();
 		
 		
-		switch (character.getMovement()) {
-		case FORWARD: aniForwardVector.set(character.getForwardVector());
-			break;
-		case BACKWARD: aniForwardVector.set(character.getForwardVector()).scl(-1);
-			break;
-		case LEFT: aniForwardVector.set(character.getRightVector()).scl(-1);
-			break;
-		case RIGHT: aniForwardVector.set(character.getRightVector());
-			break;
-		default: aniForwardVector.set(character.getForwardVector());
-			break;
-		}
+		lookAtVector.set(character.getForwardVector());
+		// Reverse the result
+		lookAtVector.scl(-1);
 		
-		// Get the backward value of the set forward vector
-		aniTempMatrix.setToLookAt(aniForwardVector.scl(-1), Vector3.Y);
+		aniTempMatrix.setToLookAt(lookAtVector, Vector3.Y);
 		aniTempMatrix.inv();
 
 		// Apply the value to the Matrix of the animation
