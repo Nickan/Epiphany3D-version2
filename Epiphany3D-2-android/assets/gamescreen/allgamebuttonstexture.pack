@@ -1,0 +1,152 @@
+
+allgamebuttonstexture.png
+format: RGBA8888
+filter: MipMapLinearNearest,Nearest
+repeat: none
+attack
+  rotate: false
+  xy: 0, 33
+  size: 100, 95
+  orig: 100, 96
+  offset: 0, 1
+  index: -1
+rightnormal
+  rotate: false
+  xy: 100, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+backwardnormal
+  rotate: false
+  xy: 100, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+forwardnormal
+  rotate: false
+  xy: 164, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+equipmentslotnormal
+  rotate: false
+  xy: 164, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+leftnormal
+  rotate: false
+  xy: 228, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+backwardpressed
+  rotate: false
+  xy: 228, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+forwardpressed
+  rotate: false
+  xy: 292, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+itemslotnormal
+  rotate: false
+  xy: 292, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+itemslotpressed
+  rotate: false
+  xy: 356, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+equipmentslotpressed
+  rotate: false
+  xy: 356, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+leftpressed
+  rotate: false
+  xy: 420, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+rightpressed
+  rotate: false
+  xy: 420, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+pausepressed
+  rotate: false
+  xy: 0, 2
+  size: 32, 31
+  orig: 32, 32
+  offset: 0, 1
+  index: -1
+resumenormal
+  rotate: false
+  xy: 484, 97
+  size: 32, 31
+  orig: 32, 31
+  offset: 0, 0
+  index: -1
+resumepressed
+  rotate: false
+  xy: 32, 2
+  size: 32, 31
+  orig: 32, 31
+  offset: 0, 0
+  index: -1
+pausenormal
+  rotate: false
+  xy: 484, 66
+  size: 32, 31
+  orig: 32, 32
+  offset: 0, 1
+  index: -1
+pluspressed
+  rotate: false
+  xy: 516, 99
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+plusnormal
+  rotate: false
+  xy: 516, 99
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+minuspressed
+  rotate: false
+  xy: 64, 5
+  size: 29, 28
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+minusnormal
+  rotate: false
+  xy: 484, 37
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
