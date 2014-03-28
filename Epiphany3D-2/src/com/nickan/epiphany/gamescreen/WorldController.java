@@ -1,14 +1,12 @@
 package com.nickan.epiphany.gamescreen;
 
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
-import com.nickan.epiphany.model.MoveableEntity.Movement;
 
 /**
  * Controls the World, but in constructor, only the WorldRenderer is passed, as the WorldRenderer has the copy
  * of World instance
- * @author nickan
+ * @author Nickan
  *
  */
 public class WorldController implements InputProcessor {
@@ -27,6 +25,7 @@ public class WorldController implements InputProcessor {
 	
 	@Override
 	public boolean keyDown(int keycode) {
+		/*
 		switch (keycode) {
 		case Keys.W: world.player.setMovement(Movement.FORWARD);
 			break;
@@ -37,13 +36,17 @@ public class WorldController implements InputProcessor {
 		case Keys.D: world.player.setMovement(Movement.RIGHT);
 			break;
 		}
-		return true;
+		*/
+
+		return false;
 	}
 	
 	@Override
 	public boolean keyUp(int keycode) {
+		/*
 		world.player.setMovement(Movement.STOP);
-		return true;
+		*/
+		return false;
 	}
 	
 	@Override
@@ -55,12 +58,14 @@ public class WorldController implements InputProcessor {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		previousTouch.set(screenX, screenY);
-		return true;
+		
+		return false;
 	}
 	
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return true;
+
+		return false;
 	}
 	
 	@Override
@@ -69,7 +74,9 @@ public class WorldController implements InputProcessor {
 		float scrolledY = screenY - previousTouch.y;
 		previousTouch.set(screenX, screenY);
 		
-		world.incCamRotation(scrolledX, scrolledY, 0);
+		if (!world.stopCameraRotation) {
+			world.incCamRotation(scrolledX, scrolledY, 0);
+		}
 		return false;
 	}
 	
