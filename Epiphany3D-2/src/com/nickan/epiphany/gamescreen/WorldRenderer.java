@@ -9,10 +9,10 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.utils.Array;
+import com.nickan.epiphany.model.Zombie;
 
 public class WorldRenderer {
 	World world;
@@ -29,10 +29,10 @@ public class WorldRenderer {
 	private Environment environment;
 	private ModelBatch modelBatch;
 	private PerspectiveCamera perspectiveCam;
-	private PointLight pointLight;
+//	private PointLight pointLight;
 	
 	private ModelInstance player;
-	private Array<ModelInstance> enemies;
+	private Array<ModelInstance> zombies;
 	
 	// For fixing problem light
 	private DirectionalLight dirLight;
@@ -48,7 +48,7 @@ public class WorldRenderer {
 	public WorldRenderer(World world) {
 		this.world = world;
 		worldModelInstances = new Array<ModelInstance>();
-		enemies = new Array<ModelInstance>();
+		zombies = new Array<ModelInstance>();
 		aniHandlers = new Array<AnimationHandler>();
 		
 		loadAssets();
@@ -56,7 +56,7 @@ public class WorldRenderer {
 		// Set up the viewport of the game
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
-		pointLight = new PointLight().set(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 10.0f);
+//		pointLight = new PointLight().set(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 10.0f);
 		environment = new Environment();
 		
 		// For fixing...
@@ -81,15 +81,16 @@ public class WorldRenderer {
 	
 	private void loadAssets() {
 		assetManager = new AssetManager();
-		assetManager.load("gamescreen/scene.g3db", Model.class);
-		assetManager.load("gamescreen/player.g3db", Model.class);
+		assetManager.load("gamescreen/graphics3d/scene.g3db", Model.class);
+		assetManager.load("gamescreen/graphics3d/player.g3db", Model.class);
+		assetManager.load("gamescreen/graphics3d/zombie.g3db", Model.class);
 	}
 	
 	/**
 	 * Sets up all the Model instances and the scene of the game
 	 */
 	private void initializeAssets() {
-		Model sceneModel = assetManager.get("gamescreen/scene.g3db", Model.class);
+		Model sceneModel = assetManager.get("gamescreen/graphics3d/scene.g3db", Model.class);
 		
 		// Load all the nodes the scene have
 		for (int index = 0; index < sceneModel.nodes.size; ++index) {
@@ -124,20 +125,33 @@ public class WorldRenderer {
 		}
 		
 		// Player's model
-		player = new ModelInstance(assetManager.get("gamescreen/player.g3db", Model.class));
-		
+		player = new ModelInstance(assetManager.get("gamescreen/graphics3d/player.g3db", Model.class));
+
+				
 		worldModelInstances.add(player);
 	}
 	
+	/**
+	 * Initialize the AnimationHandlers of the Characters
+	 */
 	private void initializeAnimationHandlers() {
 		int standingFrameNumber = 6;
-		int runningFrameNumber = 10;
-		int attackingFrameNumber = 40;
+		int runningFrameNumber = 40;
+		int attackingFrameNumber = 10;
+		
 		aniHandlers.add(new AnimationHandler(world.player, new AnimationController(player), 
 				standingFrameNumber, runningFrameNumber, attackingFrameNumber));
+		
+		Model zombieModel = assetManager.get("gamescreen/graphics3d/zombie.g3db", Model.class);
+		for (Zombie zombie: world.zombies) {
+			ModelInstance zomModInstance = new ModelInstance(zombieModel);
+			zombies.add(zomModInstance);
+			aniHandlers.add(new AnimationHandler(zombie, new AnimationController(zomModInstance), 11, 20, 10));
+		}
+		
+		worldModelInstances.addAll(zombies);
 	}
-	
-	
+
 	public void render(float delta) {
 		// The assets should only be initialize once all the ModelInstances and the scene of the game are loaded
 		if (loadingResources && assetManager.update()) {
