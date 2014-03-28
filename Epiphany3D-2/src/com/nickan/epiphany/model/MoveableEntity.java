@@ -1,27 +1,41 @@
 package com.nickan.epiphany.model;
 
+
 import com.badlogic.gdx.math.Vector3;
+import com.nickan.epiphany.framework.math.Dimension3D;
 import com.nickan.epiphany.framework.math.Euler;
 
+/**
+ * An entity class that knows everything about movement(I guess)
+ * @author Nickan
+ *
+ */
 public abstract class MoveableEntity extends Entity {
-	float speed;
+	float maxSpeed;
 	float forwardSpeed;
 	float sideSpeed;
+	float sightRange;
 	
 	/** The view vector of the entity */
 	Vector3 forwardVector;
-	Vector3 rightVector;
+	
+	/** Will be the basis forward when the forward key is pressed */
+	Vector3 camForwardVector;
 	
 	protected static Vector3 tempVec1 = new Vector3();
 	protected static Vector3 tempVec2 = new Vector3();
 	protected static Vector3 tempVec3 = new Vector3();
 	
 	public enum Movement { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
-	private Movement movement = Movement.STOP;
+	private Movement currentMovement = Movement.STOP;
+	
+	/** A movement set by the user */
+	private Movement commandedMovement = Movement.STOP;
 
-	public MoveableEntity(Vector3 position, Dimension3D dimension, float speed) {
+	public MoveableEntity(Vector3 position, Dimension3D dimension, float sightRange, float maxSpeed) {
 		super(position, dimension);
-		this.speed = speed;
+		this.sightRange = sightRange;
+		this.maxSpeed = maxSpeed;
 		
 		// Default is viewing to the right
 		this.forwardVector = new Vector3(1.0f, 0, 0);
@@ -29,87 +43,83 @@ public abstract class MoveableEntity extends Entity {
 	
 	protected void update(float delta) {
 		tempVec1.set(forwardVector);
-		
-		// Get the right vector
-		tempVec2.set(tempVec1).crs(Vector3.Y);
-		
-		// Set the velocity
-		tempVec3.set(tempVec1.scl(forwardSpeed).add(tempVec2.scl(sideSpeed)));
-
-		position.add(tempVec3);
+		tempVec1.scl(forwardSpeed * delta);
+		boundBox.position.add(tempVec1);
 	}
 	
-	public boolean isInRange(Vector3 target, float range) {
+	public boolean isInRange(Vector3 centerTargetPos, float range) {
 		// Check if the length of the distance between the target is lower than the radius of the target
 		tempVec1.set(Vector3.Zero);
-		tempVec2.set(target);
+		
+		// Get the origin of the target
+		tempVec2.set(centerTargetPos);
 		
 		// Get the view vector to the target
-		tempVec1.set(tempVec2.sub(position));
+		tempVec1.set(tempVec2.sub(boundBox.getCenter()));
 		
 		return (tempVec1.len2() <= range * range);
 	}
 	
-	public void seek(Vector3 target, float delta) {
-		// Reset value
-		tempVec1.set(Vector3.Zero);
-		tempVec2.set(target);
+	/**
+	 * Approaches the target
+	 * @param centerTargetPos
+	 * @param delta
+	 */
+	public void seek(Vector3 centerTargetPos, float delta) {
+		// Get the origin of the target
+		tempVec1.set(centerTargetPos);
 
 		// Get the view vector to the target
-		tempVec1.set(tempVec2.sub(position));
-		tempVec1.nor();
+		forwardVector.set(tempVec1.sub(boundBox.getCenter()));
+		forwardVector.nor();
 		
-		// Track the target
-		position.add(tempVec1.scl(speed * delta));
+		// Track the target, time-based movement
+		boundBox.position.add(forwardVector.scl(maxSpeed * delta));
 	}
 	
-	public void setForwardVector(Vector3 camDirection) {
-		forwardVector.set(camDirection);
-		
-		// Set the elevation movement to 0
+	/**
+	 * Set up the camera's direction to forward direction, setting up the y to zero then normalized
+	 */
+	public void forwardVectorToCamDirection() {
+		forwardVector.set(camForwardVector);
 		forwardVector.y = 0;
 		forwardVector.nor();
 	}
 	
-	public Vector3 getForwardVector() {
-		return forwardVector;
-	}
-	
 	public Vector3 getRightVector() {
-		return Euler.getOrthogonalAxes(forwardVector, Vector3.Y);
+		tempVec1.set(forwardVector);
+		return Euler.getOrthogonalAxes(tempVec1, Vector3.Y);
 	}
 	
-	public void setMovement(Movement movement) {
-		switch (movement) {
-		case FORWARD: forwardSpeed = speed;
-			break;
-		case BACKWARD: forwardSpeed = -speed;
-			break;
-		case LEFT: sideSpeed = -speed;
-			break;
-		case RIGHT: sideSpeed = speed;
-			break;
-		case STOP:
-			forwardSpeed = 0;
-			sideSpeed = 0;
-			break;
-		}
-		
-		// Detects whether there is movement changed
-		if (this.movement != movement) {
-			movementChanged(movement);
-			this.movement = movement;
-		}
-	}
+	public void setForwardSpeed(float forwardSpeed) { this.forwardSpeed = forwardSpeed; };
+	public float getForwardSpeed() { return forwardSpeed; }
+	
+	public void setMaxSpeed(float maxSpeed) { this.maxSpeed = maxSpeed; }
+	public float getMaxSpeed() { return maxSpeed; }
+	
+	public void setSightRange(float sightRange) { this.sightRange = sightRange; }
+	public float getSightRange() { return sightRange; }
+	
+	public void setCamForwardVector(Vector3 camForwardVector) { this.camForwardVector = camForwardVector; }
+	
+	public void setCommandedMovement(Movement movement) { this.commandedMovement = movement; }
+	public Movement getCommandedMovement() { return commandedMovement; }
+	
+	public void setCurrentMovement(Movement currentMovement) { this.currentMovement = currentMovement; }
+	public Movement getCurrentMovement() { return currentMovement; }
 	
 	/**
-	 * Will be called whenever the movement has changed
+	 * Will ignore the y movement and be normalized
+	 * @param forwardVector
 	 */
-	public abstract void movementChanged(Movement movement);
-	
-	public Movement getMovement() {
-		return movement;
+	public void setForwardVector(Vector3 forwardVector) {
+		this.forwardVector.set(forwardVector);
+		
+		// Set the elevation movement to 0
+		this.forwardVector.y = 0;
+		this.forwardVector.nor();
 	}
+	public Vector3 getForwardVector() { return forwardVector; }
 	
 	
 	

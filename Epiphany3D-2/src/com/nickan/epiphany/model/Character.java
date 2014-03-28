@@ -1,54 +1,69 @@
 package com.nickan.epiphany.model;
 
 import com.badlogic.gdx.math.Vector3;
+import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.StateMachine;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
+import com.nickan.epiphany.framework.math.BoundBox;
+import com.nickan.epiphany.framework.math.Dimension3D;
+import com.nickan.epiphany.model.characterstate.GlobalState;
+import com.nickan.epiphany.model.characterstate.IdleState;
 
-
+/**
+ * Knows how to attack and set the values for animation
+ * @author Nickan
+ *
+ */
 public class Character extends MoveableEntity {
-	StateMachine<Character> stateMachine;
+	int targetId;
+	BoundBox tarBoundBox;
+	
+	StateMachine<Character> charStateMachine;
+	float attackDelay;
+	float attackTimer;
 	
 	public enum Action { IDLE, RUNNING, ATTACKING, DEAD };
 	private Action currentAction = Action.IDLE;
 
-	public Character(Vector3 position, Dimension3D dimension, float speed) {
-		super(position, dimension, speed);
-		stateMachine = new StateMachine<Character>(this);
+	public Character(Vector3 position, Dimension3D dimension, float sightRange, float speed) {
+		super(position, dimension, sightRange, speed);
+		charStateMachine = new StateMachine<Character>(this, IdleState.getInstance(), GlobalState.getInstance());
+		
+		this.targetId = -1;
+		setAttackDelay(1.0f);
+		resetAttackTimer();
 	}
 	
 	public void update(float delta) {
-		stateMachine.update(delta);
+		charStateMachine.update(delta);
 		super.update(delta);
 	}
 	
-	@Override
-	public void movementChanged(Movement movement) {
-		if (movement == Movement.STOP) {
-			currentAction = Action.IDLE;
-		} else {
-			currentAction = Action.RUNNING;
-		}
-	}
-	
-	/**
-	 * Will be used for playing animation
-	 * @return
-	 */
-	public Action getCurrentAction() {
-		return currentAction;
-	}
-
 	public int getLife() {
 		return 0;
 	}
 	
+	public void setTargetId(int targetId) { this.targetId = targetId; }
+	public int getTargetId() { return targetId; }
+	
+	public void setAttackDelay(float attackDelay) { this.attackDelay = attackDelay; }
+	public float getAttackDelay() { return attackDelay; }
+	
+	public void incAttackTimer(float delta) { attackTimer += delta; }
+	public float getAttackTimer() { return attackTimer; }
+	public void resetAttackTimer() { attackTimer = 0; }
+	
+	public void setCurrentAction(Action currentAction) { this.currentAction = currentAction; }
+	public Action getCurrentAction() { return currentAction; }
+	
+	public void setTargetBoundBox(BoundBox tarBoundBox) { this.tarBoundBox = tarBoundBox; }
+	public BoundBox getTargetBoundBox() { return tarBoundBox; }
+	
+	public void charChangeState(BaseState<Character> state) { charStateMachine.changeState(state); }
 	
 	@Override
 	public boolean handleMessage(Message message) {
-		// TODO Auto-generated method stub
-		return false;
+		return charStateMachine.handleMessage(message);
 	}
-
-	
 
 }
