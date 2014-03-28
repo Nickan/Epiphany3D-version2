@@ -5,27 +5,40 @@ import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
 
 public class StateMachine<EntityType> {
 	EntityType entity;
-	BaseState<EntityType> currentState = null;
+	BaseState<EntityType> currentState;
+	BaseState<EntityType> globalState;
 
-	public StateMachine(EntityType entity) {
+	public StateMachine(EntityType entity, BaseState<EntityType> currentState, BaseState<EntityType> globalState) {
 		this.entity = entity;
+		this.currentState = currentState;
+		this.globalState = globalState;
 	}
 	
 	public void update(float delta) {
-		if (currentState != null) {
-			currentState.update(entity);
-		}
+		globalState.update(entity, delta);
+		currentState.update(entity, delta);
 	}
 	
 	public void changeState(BaseState<EntityType> state) {
-		if (currentState != null) {
-			currentState.exit(entity);
-		}
+		// Exit from the current state
+		currentState.exit(entity);
+		
+		// Start the new state
+		state.start(entity);
+		
+		// Set the current state to be the new state
 		currentState = state;
 	}
 	
-	public boolean handleTelegram(Message message) {
-		// For now, return the current state's message handling capability
-		return currentState.handleTelegram(message);
+	public boolean handleMessage(Message message) {
+		// Check if the current state can handle the message
+		if (currentState.handleMessage(entity, message)) {
+			return true;
+		}
+		
+		if (globalState.handleMessage(entity, message)) {
+			return true;
+		}
+		return false;
 	}
 }
