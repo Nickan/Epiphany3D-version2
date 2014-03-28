@@ -109,6 +109,7 @@ public class AllGameButtonsView {
 			
 			public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, MessageType.PLAYER_MOVE, Movement.STOP);
+				world.stopCameraRotation = false;
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -128,6 +129,7 @@ public class AllGameButtonsView {
 			
 			public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, MessageType.PLAYER_MOVE, Movement.STOP);
+				world.stopCameraRotation = false;
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -147,6 +149,7 @@ public class AllGameButtonsView {
 			public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, 
 						MessageType.PLAYER_MOVE, Movement.STOP);
+				world.stopCameraRotation = false;
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -158,7 +161,6 @@ public class AllGameButtonsView {
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, 
 						MessageType.PLAYER_MOVE, Movement.RIGHT);
-				
 				world.stopCameraRotation = false;
 				return true;
 			}
@@ -166,7 +168,7 @@ public class AllGameButtonsView {
 			public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, 
 						MessageType.PLAYER_MOVE, Movement.STOP);
-				
+				world.stopCameraRotation = false;
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -176,6 +178,7 @@ public class AllGameButtonsView {
 	}
 	
 	private void initializeSkillsAndAttackButtons() {
+		attack.setColor(1.0f, 1.0f, 1.0f, 0.4f);
 		attack.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
 				attack.setColor(1.0f, 1.0f, 1.0f, 1.0f);
