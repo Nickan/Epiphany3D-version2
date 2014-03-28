@@ -6,10 +6,10 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 public class Main {
 	public static void main(String[] args) {
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
-		cfg.title = "Epiphany3D-2";
+		cfg.title = "Epiphany3D Version 2: Alpha 0.0.1";
 		cfg.useGL20 = true;
-		cfg.width = 800;
-		cfg.height = 600;
+		cfg.width = 480;
+		cfg.height = 320;
 		
 		new LwjglApplication(new Epiphany(), cfg);
 	}
