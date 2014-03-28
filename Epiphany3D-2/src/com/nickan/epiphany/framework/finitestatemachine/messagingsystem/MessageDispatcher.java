@@ -17,9 +17,7 @@ public class MessageDispatcher {
 	private static Array<Message> messages = new Array<Message>();
 	private static Pool<Message> poolMessages;
 	
-	private MessageDispatcher() {
-		
-	}
+	private MessageDispatcher() { }
 
 	private static void initialize() {
 		// Limit the creation of the message
@@ -31,6 +29,12 @@ public class MessageDispatcher {
 			}
 			
 		};
+	}
+	
+	public static void clear() {
+		poolMessages.clear();
+		messages.clear();
+		initialized = false;
 	}
 
 	public static void update(float delta) {
