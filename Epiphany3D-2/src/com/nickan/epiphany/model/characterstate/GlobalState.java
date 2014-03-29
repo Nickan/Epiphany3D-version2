@@ -4,6 +4,7 @@ import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
+import com.nickan.epiphany.framework.math.BoundBox;
 import com.nickan.epiphany.model.Character;
 import com.nickan.epiphany.model.MoveableEntity.Movement;
 
@@ -31,12 +32,6 @@ public class GlobalState implements BaseState<Character> {
 	@Override
 	public boolean handleMessage(Character entity, Message message) {
 		switch (message.type) {
-		// All the command that has PLAYER_ in front of it are player's command
-		case PLAYER_ATTACK:
-			int targetId = (Integer) message.extraInfo;
-			entity.setTargetId(targetId);
-			entity.charChangeState(AttackState.getInstance());
-			return true;
 		case PLAYER_MOVE:
 			Movement movement = (Movement) message.extraInfo;
 			entity.setCommandedMovement(movement);
@@ -46,11 +41,20 @@ public class GlobalState implements BaseState<Character> {
 		case ATTACK:
 			MessageDispatcher.sendMessage(message.receiverId, message.senderId, 0, 
 					MessageType.ATTACK_RESPONSE, entity.getBoundBox());
+			
 			return true;
 			
 		// The responses
 		case ATTACK_RESPONSE:
+		//	BoundBox tarBoundBox = (BoundBox) message.extraInfo;
+		//	entity.setTargetBoundBox(tarBoundBox);
 			
+			return true;
+			
+		case IS_IN_RANGE:
+			entity.setTargetId(message.senderId);
+			entity.setTargetBoundBox((BoundBox) message.extraInfo);
+			entity.charChangeState(AttackState.getInstance());
 			return true;
 			
 		default:
