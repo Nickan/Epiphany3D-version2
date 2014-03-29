@@ -1,4 +1,4 @@
-package com.nickan.epiphany.gamescreen;
+package com.nickan.epiphany.screens.gamescreen;
 
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;

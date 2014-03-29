@@ -1,4 +1,4 @@
-package com.nickan.epiphany.gamescreen;
+package com.nickan.epiphany.screens.gamescreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
