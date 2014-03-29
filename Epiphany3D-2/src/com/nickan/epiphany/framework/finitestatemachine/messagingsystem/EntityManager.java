@@ -8,6 +8,7 @@ import com.nickan.epiphany.framework.finitestatemachine.BaseEntity;
  *
  */
 public class EntityManager {
+	// Limited quantity for now, to be changed later if needed
 	private static final int QUANTITY = 300;
 	private static BaseEntity[] entityList = new BaseEntity[QUANTITY];
 

@@ -1,7 +1,7 @@
 package com.nickan.epiphany;
 
 import com.badlogic.gdx.Game;
-import com.nickan.epiphany.gamescreen.GameScreen;
+import com.nickan.epiphany.screens.gamescreen.GameScreen;
 
 public class Epiphany extends Game {
 
@@ -9,5 +9,5 @@ public class Epiphany extends Game {
 	public void create() {
 		this.setScreen(new GameScreen(this));
 	}
-
+	
 }
