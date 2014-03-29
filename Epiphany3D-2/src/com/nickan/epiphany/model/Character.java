@@ -15,6 +15,9 @@ import com.nickan.epiphany.model.characterstate.IdleState;
  *
  */
 public class Character extends MoveableEntity {
+	// Can safely be declared as public, as it has its own interface
+	StatisticsHandler statsHandler;
+	
 	int targetId;
 	BoundBox tarBoundBox;
 	
@@ -32,6 +35,7 @@ public class Character extends MoveableEntity {
 		this.targetId = -1;
 		setAttackDelay(1.0f);
 		resetAttackTimer();
+		statsHandler = new StatisticsHandler();
 	}
 	
 	public void update(float delta) {
