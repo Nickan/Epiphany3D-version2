@@ -49,30 +49,17 @@ public class AttackState implements BaseState<Character> {
 			//...
 			System.out.println("Attack!");
 		}
-		//...
-//		System.out.println("Attack timer:" + entity.getAttackTimer());
 	}
 
 	@Override
 	public void exit(Character entity) {
 		entity.setTargetBoundBox(null);
 		entity.setTargetId(-1);
+		entity.setCurrentAction(Action.IDLE);
 	}
 
 	@Override
 	public boolean handleMessage(Character entity, Message message) {
-		switch (message.type) {
-		case ATTACK: // Ignore for now
-			return true;
-		
-		// The responses
-		case ATTACK_RESPONSE:
-			BoundBox tarBoundBox = (BoundBox) message.extraInfo;
-			entity.setTargetBoundBox(tarBoundBox);
-			return true;
-		default:
-			break;
-		}
 		return false;
 	}
 	
