@@ -1,8 +1,7 @@
 package com.nickan.epiphany.model;
 
-
 import com.badlogic.gdx.math.Vector3;
-import com.nickan.epiphany.framework.math.Dimension3D;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.math.Euler;
 
 /**
@@ -22,7 +21,10 @@ public abstract class MoveableEntity extends Entity {
 	/** Will be the basis forward when the forward key is pressed */
 	Vector3 camForwardVector;
 	
-	protected static Vector3 tempVec1 = new Vector3();
+	/** 
+	 * For the use of setting up temporary values for vectors that should not be overridden by
+	 * Vector3 operations such as add, sub, mul, etc.
+	 */
 	protected static Vector3 tempVec2 = new Vector3();
 	protected static Vector3 tempVec3 = new Vector3();
 	
@@ -32,8 +34,8 @@ public abstract class MoveableEntity extends Entity {
 	/** A movement set by the user */
 	private Movement commandedMovement = Movement.STOP;
 
-	public MoveableEntity(Vector3 position, Dimension3D dimension, float sightRange, float maxSpeed) {
-		super(position, dimension);
+	public MoveableEntity(BoundingBox boundingBox, float sightRange, float maxSpeed) {
+		super(boundingBox);
 		this.sightRange = sightRange;
 		this.maxSpeed = maxSpeed;
 		
@@ -44,18 +46,20 @@ public abstract class MoveableEntity extends Entity {
 	protected void update(float delta) {
 		tempVec1.set(forwardVector);
 		tempVec1.scl(forwardSpeed * delta);
-		boundBox.position.add(tempVec1);
+		
+		boundingBox.min.add(tempVec1);
+		update();
 	}
 	
 	public boolean isInRange(Vector3 centerTargetPos, float range) {
 		// Check if the length of the distance between the target is lower than the radius of the target
-		tempVec1.set(Vector3.Zero);
+		tempVec3.set(Vector3.Zero);
 		
 		// Get the origin of the target
 		tempVec2.set(centerTargetPos);
 		
 		// Get the view vector to the target
-		tempVec1.set(tempVec2.sub(boundBox.getCenter()));
+		tempVec1.set(tempVec2.sub(boundingBox.getCenter()));
 		
 		return (tempVec1.len2() <= range * range);
 	}
@@ -70,11 +74,11 @@ public abstract class MoveableEntity extends Entity {
 		tempVec1.set(centerTargetPos);
 
 		// Get the view vector to the target
-		forwardVector.set(tempVec1.sub(boundBox.getCenter()));
+		forwardVector.set(tempVec1.sub(boundingBox.getCenter()));
 		forwardVector.nor();
 		
 		// Track the target, time-based movement
-		boundBox.position.add(forwardVector.scl(maxSpeed * delta));
+		boundingBox.min.add(forwardVector.scl(maxSpeed * delta));
 	}
 	
 	/**

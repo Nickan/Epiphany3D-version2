@@ -1,11 +1,11 @@
 package com.nickan.epiphany.screens.gamescreen;
 
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.nickan.epiphany.Epiphany;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
-import com.nickan.epiphany.framework.math.Dimension3D;
 import com.nickan.epiphany.framework.math.Euler;
 import com.nickan.epiphany.model.Player;
 import com.nickan.epiphany.model.Zombie;
@@ -34,14 +34,16 @@ public class World {
 		stopCameraRotation = false;
 		
 		zombies = new Array<Zombie>();
-		zombies.add(new Zombie(new Vector3(0, 0, 1), new Dimension3D(0.75f, 1, 1), 3.0f, 0.5f) );
-		zombies.add(new Zombie(new Vector3(1, 0, 1), new Dimension3D(0.75f, 1, 1), 3.0f, 0.5f) );
-		zombies.add(new Zombie(new Vector3(2, 0, 1), new Dimension3D(0.75f, 1, 1), 3.0f, 0.5f) );
-		zombies.add(new Zombie(new Vector3(3, 0, 1), new Dimension3D(0.75f, 1, 1), 3.0f, 0.5f) );
-		zombies.add(new Zombie(new Vector3(4, 0, 1), new Dimension3D(0.75f, 1, 1), 3.0f, 0.5f) );
+		zombies.add(new Zombie(new BoundingBox(new Vector3(0, 0, 1), new Vector3(0.75f, 1, 2)), 3.0f, 0.5f) );
+		zombies.add(new Zombie(new BoundingBox(new Vector3(1, 0, 1), new Vector3(1.75f, 1, 2)), 3.0f, 0.5f) );
+		zombies.add(new Zombie(new BoundingBox(new Vector3(2, 0, 1), new Vector3(2.75f, 1, 2)), 3.0f, 0.5f) );
+		zombies.add(new Zombie(new BoundingBox(new Vector3(3, 0, 1), new Vector3(3.75f, 1, 2)), 3.0f, 0.5f) );
+		zombies.add(new Zombie(new BoundingBox(new Vector3(4, 0, 1), new Vector3(4.75f, 1, 2)), 3.0f, 0.5f) );
 		
-		player = new Player(new Vector3(5, 0, 5), new Dimension3D(0.75f, 1, 1), 3.0f, 1.0f);
+		player = new Player(new BoundingBox(new Vector3(10, 0, 5), new Vector3(10.75f, 1, 6)), 3.0f, 2f);
 		player.setCamForwardVector(camDirection);
+		
+		MessageDispatcher.initialize();
 	}
 	
 	public void update(float delta) {
@@ -53,15 +55,15 @@ public class World {
 			// Zombie doesn't have any target
 			if (zombie.getTargetId() == -1) {
 				// The player is in range
-				if (zombie.isInRange(player.getCenter(), zombie.getSightRange())) {
+				if (zombie.isInRange(player.getBoundingBox().getCenter(), zombie.getSightRange())) {
 					MessageDispatcher.sendMessage(player.getId(), zombie.getId(), 0, 
-							MessageType.IS_IN_RANGE, player.getBoundBox());
+							MessageType.IS_IN_RANGE, player.getBoundingBox());
 				}
 			} else {
 				
 				// The zombie has a target but has gets out so far away from its sight range
 				// If the player gets so far away from its sight range
-				if (!zombie.isInRange(player.getCenter(), zombie.getSightRange() + 2)) {
+				if (!zombie.isInRange(player.getBoundingBox().getCenter(), zombie.getSightRange() + 2)) {
 					zombie.charChangeState(IdleState.getInstance());
 				}
 			}
@@ -80,9 +82,9 @@ public class World {
 		}
 		
 		for (Zombie zombie: zombies) {
-			if (player.isInRange(zombie.getCenter(), player.getSightRange())) {
+			if (player.isInRange(zombie.getBoundingBox().getCenter(), player.getSightRange())) {
 				MessageDispatcher.sendMessage(zombie.getId(), player.getId(), 0, 
-						MessageType.IS_IN_RANGE, zombie.getBoundBox());
+						MessageType.IS_IN_RANGE, zombie.getBoundingBox());
 			}
 		}
 	}

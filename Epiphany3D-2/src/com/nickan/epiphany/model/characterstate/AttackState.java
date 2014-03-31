@@ -1,10 +1,11 @@
 package com.nickan.epiphany.model.characterstate;
 
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
-import com.nickan.epiphany.framework.math.BoundBox;
 import com.nickan.epiphany.model.Character;
 import com.nickan.epiphany.model.Character.Action;
 
@@ -18,12 +19,15 @@ public class AttackState implements BaseState<Character> {
 
 	@Override
 	public void update(Character entity, float delta) {
-		BoundBox tarBound = entity.getTargetBoundBox();
 		// Meaning the coordinates of the enemy is set
+		BoundingBox tarBound = entity.getTargetBoundingBox();
 		if (tarBound != null) {
 			// Check if the target has not been collided
-			if (!entity.isInRange(tarBound.getCenter(), tarBound.dimension.width / 2 + 
-					entity.getDimension().width / 2)) {
+			Vector3 tarDim = tarBound.getDimensions();
+			Vector3 entDim = entity.getBoundingBox().getDimensions();
+			
+			// Temporary bounds for range detection
+			if (!entity.isInRange(tarBound.getCenter(), (entDim.x / 2) + (tarDim.x / 2)) ) {
 				entity.seek(tarBound.getCenter(), delta);
 				entity.setCurrentAction(Action.RUNNING);
 			} else {
@@ -53,7 +57,7 @@ public class AttackState implements BaseState<Character> {
 
 	@Override
 	public void exit(Character entity) {
-		entity.setTargetBoundBox(null);
+		entity.setTargetBoundingBox(null);
 		entity.setTargetId(-1);
 		entity.setCurrentAction(Action.IDLE);
 	}

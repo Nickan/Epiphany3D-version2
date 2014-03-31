@@ -1,10 +1,10 @@
 package com.nickan.epiphany.model.characterstate;
 
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
-import com.nickan.epiphany.framework.math.BoundBox;
 import com.nickan.epiphany.model.Character;
 import com.nickan.epiphany.model.MoveableEntity.Movement;
 
@@ -40,7 +40,7 @@ public class GlobalState implements BaseState<Character> {
 			
 		case ATTACK:
 			MessageDispatcher.sendMessage(message.receiverId, message.senderId, 0, 
-					MessageType.ATTACK_RESPONSE, entity.getBoundBox());
+					MessageType.ATTACK_RESPONSE, entity.getBoundingBox());
 			
 			return true;
 			
@@ -53,7 +53,7 @@ public class GlobalState implements BaseState<Character> {
 			
 		case IS_IN_RANGE:
 			entity.setTargetId(message.senderId);
-			entity.setTargetBoundBox((BoundBox) message.extraInfo);
+			entity.setTargetBoundingBox((BoundingBox) message.extraInfo);
 			entity.charChangeState(AttackState.getInstance());
 			return true;
 			

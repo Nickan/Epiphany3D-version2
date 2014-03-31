@@ -1,11 +1,9 @@
 package com.nickan.epiphany.model;
 
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.StateMachine;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
-import com.nickan.epiphany.framework.math.BoundBox;
-import com.nickan.epiphany.framework.math.Dimension3D;
 import com.nickan.epiphany.model.characterstate.GlobalState;
 import com.nickan.epiphany.model.characterstate.IdleState;
 
@@ -19,7 +17,7 @@ public class Character extends MoveableEntity {
 	StatisticsHandler statsHandler;
 	
 	int targetId;
-	BoundBox tarBoundBox;
+	BoundingBox tarBoundingBox;
 	
 	StateMachine<Character> charStateMachine;
 	float attackDelay;
@@ -28,8 +26,8 @@ public class Character extends MoveableEntity {
 	public enum Action { IDLE, RUNNING, ATTACKING, DEAD };
 	private Action currentAction = Action.IDLE;
 
-	public Character(Vector3 position, Dimension3D dimension, float sightRange, float speed) {
-		super(position, dimension, sightRange, speed);
+	public Character(BoundingBox boundingBox, float sightRange, float speed) {
+		super(boundingBox, sightRange, speed);
 		charStateMachine = new StateMachine<Character>(this, IdleState.getInstance(), GlobalState.getInstance());
 		
 		this.targetId = -1;
@@ -60,8 +58,8 @@ public class Character extends MoveableEntity {
 	public void setCurrentAction(Action currentAction) { this.currentAction = currentAction; }
 	public Action getCurrentAction() { return currentAction; }
 	
-	public void setTargetBoundBox(BoundBox tarBoundBox) { this.tarBoundBox = tarBoundBox; }
-	public BoundBox getTargetBoundBox() { return tarBoundBox; }
+	public void setTargetBoundingBox(BoundingBox tarBoundingBox) { this.tarBoundingBox = tarBoundingBox; }
+	public BoundingBox getTargetBoundingBox() { return tarBoundingBox; }
 	
 	public void charChangeState(BaseState<Character> state) { charStateMachine.changeState(state); }
 	

@@ -177,14 +177,14 @@ public class AnimationHandler {
 	private void updateAnimationMatrix() {
 		Matrix4 aniMatrix = aniController.target.transform;
 		
-		Vector3 position = character.getPosition();
+		Vector3 position = character.getBoundingBox().min;
+		
 		// Set the position
 		aniMatrix.idt();
 		aniMatrix.translate(position.x, position.y, position.z);
-
+		
 		// Set the rotation
 		aniTempMatrix.idt();
-		
 		
 		lookAtVector.set(character.getForwardVector());
 		// Reverse the result

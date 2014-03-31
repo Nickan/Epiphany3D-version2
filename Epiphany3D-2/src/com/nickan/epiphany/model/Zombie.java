@@ -1,12 +1,11 @@
 package com.nickan.epiphany.model;
 
-import com.badlogic.gdx.math.Vector3;
-import com.nickan.epiphany.framework.math.Dimension3D;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Zombie extends Character {
 
-	public Zombie(Vector3 position, Dimension3D dimension, float range, float speed) {
-		super(position, dimension, range, speed);
+	public Zombie(BoundingBox boundingBox, float range, float speed) {
+		super(boundingBox, range, speed);
 		// TODO Auto-generated constructor stub
 	}
 

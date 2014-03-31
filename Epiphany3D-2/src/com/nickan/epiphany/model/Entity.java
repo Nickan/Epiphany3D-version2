@@ -1,30 +1,28 @@
 package com.nickan.epiphany.model;
 
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.finitestatemachine.BaseEntity;
-import com.nickan.epiphany.framework.math.BoundBox;
-import com.nickan.epiphany.framework.math.Dimension3D;
 
 public abstract class Entity extends BaseEntity {
-	BoundBox boundBox;
+	BoundingBox boundingBox;
+	/** 
+	 * For the use of setting up temporary values for vectors that should not be overridden by
+	 * Vector3 operations such as add, sub, mul, etc.
+	 */
+	static final Vector3 tempVec1 = new Vector3();
 	
-	public Entity(Vector3 position, Dimension3D dimension) {
-		boundBox = new BoundBox(position, dimension);
+	public Entity(BoundingBox boundingBox) {
+		this.boundingBox = boundingBox;
 	}
 	
-	public Vector3 getPosition() {
-		return boundBox.position;
+	protected void update() {
+		tempVec1.set(boundingBox.min);
+		// Update the max as min I think will always be manipulated as the position
+		boundingBox.set(boundingBox.min, tempVec1.add(boundingBox.getDimensions()));
 	}
 	
-	public Dimension3D getDimension() {
-		return boundBox.dimension;
-	}
-	
-	public BoundBox getBoundBox() {
-		return boundBox;
-	}
-	
-	public Vector3 getCenter() {
-		return boundBox.getCenter();
+	public BoundingBox getBoundingBox() {
+		return boundingBox;
 	}
 }

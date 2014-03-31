@@ -178,7 +178,7 @@ public class WorldRenderer {
 		
 		modelBatch.end();
 		
-		camHandler.update(world.player.getPosition(), world.getCamDirection(), delta);
+		camHandler.update(world.player.getBoundingBox().min, world.getCamDirection(), delta);
 	}
 	
 	public void resize(int width, int height) {
