@@ -12,14 +12,13 @@ import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.
  */
 
 public class MessageDispatcher {
-	private static boolean initialized = false;
 	
 	private static Array<Message> messages = new Array<Message>();
 	private static Pool<Message> poolMessages;
 	
 	private MessageDispatcher() { }
 
-	private static void initialize() {
+	public static void initialize() {
 		// Limit the creation of the message
 		poolMessages = new Pool<Message>(50) {
 
@@ -34,14 +33,9 @@ public class MessageDispatcher {
 	public static void clear() {
 		poolMessages.clear();
 		messages.clear();
-		initialized = false;
 	}
 
 	public static void update(float delta) {
-		if (!initialized) {
-			initialized = true;
-			initialize();
-		}
 		
 		for (int index = 0; index < messages.size;++index) {
 			Message message = messages.get(index);
