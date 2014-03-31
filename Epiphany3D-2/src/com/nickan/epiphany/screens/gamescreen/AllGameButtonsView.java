@@ -7,7 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.Array;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
 import com.nickan.epiphany.model.MoveableEntity.Movement;
@@ -315,10 +314,8 @@ public class AllGameButtonsView {
 				inventoryButtons[col][row] = button;
 				button.addListener(new InputListener() {
 					public boolean touchDown(InputEvent event, float x,
-							float y, int button, int pointer) {
-						Inventory inventory = world.player.inventory;
+							float y, int button, int pointer) {	
 						// I need what column and row number this button is
-						
 						// Remove the starting position
 						float startX = event.getStageX() - inventoryX;
 						float startY = event.getStageY() - inventoryY;
@@ -326,9 +323,8 @@ public class AllGameButtonsView {
 						// Getting the index by their size
 						int col = (int) (startX / inventoryButtonWidth);
 						int row = (int) (startY / inventoryButtonHeight);
-						//...
-					//	System.out.println("Position: " + row + ": " + col);
-					//	System.out.println("Position: " + event.getStageX() + ": " + event.getStageY());
+						
+						Inventory inventory = world.player.inventory;
 						inventory.use(row, col);
 						return true;
 					}
@@ -374,7 +370,10 @@ public class AllGameButtonsView {
 		
 		head.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-//				System.out.println("Position: " + event.getStageX() + ": " + event.getStageY());
+				Inventory inventory = world.player.inventory;
+				if (inventory.getHelm() != null) {
+					inventory.removeEquippedItem(inventory.getHelm());
+				}
 				return true;
 			}
 			
@@ -389,7 +388,10 @@ public class AllGameButtonsView {
 		
 		leftHand.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				Inventory inventory = world.player.inventory;
+				if (inventory.getLeftHand() != null) {
+					inventory.removeEquippedItem(inventory.getLeftHand());
+				}
 				return true;
 			}
 			
@@ -404,7 +406,10 @@ public class AllGameButtonsView {
 		
 		rightHand.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				Inventory inventory = world.player.inventory;
+				if (inventory.getRightHand() != null) {
+					inventory.removeEquippedItem(inventory.getRightHand());
+				}
 				return true;
 			}
 			
@@ -419,7 +424,10 @@ public class AllGameButtonsView {
 		
 		body.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				Inventory inventory = world.player.inventory;
+				if (inventory.getArmor() != null) {
+					inventory.removeEquippedItem(inventory.getArmor());
+				}
 				return true;
 			}
 			
@@ -434,7 +442,10 @@ public class AllGameButtonsView {
 		
 		gloves.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				Inventory inventory = world.player.inventory;
+				if (inventory.getGloves() != null) {
+					inventory.removeEquippedItem(inventory.getGloves());
+				}
 				return true;
 			}
 			
@@ -449,7 +460,10 @@ public class AllGameButtonsView {
 		
 		boots.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				Inventory inventory = world.player.inventory;
+				if (inventory.getBoots() != null) {
+					inventory.removeEquippedItem(inventory.getBoots());
+				}
 				return true;
 			}
 			
