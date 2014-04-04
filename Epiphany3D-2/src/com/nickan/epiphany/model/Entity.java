@@ -1,28 +1,29 @@
 package com.nickan.epiphany.model;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.finitestatemachine.BaseEntity;
+import com.nickan.epiphany.framework.math.OrientedBoundingBox;
 
 public abstract class Entity extends BaseEntity {
-	BoundingBox boundingBox;
-	/** 
-	 * For the use of setting up temporary values for vectors that should not be overridden by
-	 * Vector3 operations such as add, sub, mul, etc.
-	 */
-	static final Vector3 tempVec1 = new Vector3();
+	protected Vector3 position;
+	/** Contains the center, rotation and corners of the entity */
+	protected OrientedBoundingBox obb;
 	
-	public Entity(BoundingBox boundingBox) {
-		this.boundingBox = boundingBox;
+	public Entity(Vector3 position, Vector3 dimension, Vector3 rotation) {
+		this.position = position;
+		obb = new OrientedBoundingBox(new Vector3(position.x,
+				position.y + dimension.y / 2, position.z),
+				dimension, rotation);
 	}
 	
 	protected void update() {
-		tempVec1.set(boundingBox.min);
-		// Update the max as min I think will always be manipulated as the position
-		boundingBox.set(boundingBox.min, tempVec1.add(boundingBox.getDimensions()));
+		// Update the OBB's position
+		Vector3 dimension = obb.getDimension();
+		obb.setCenter(position.x, position.y + dimension.y / 2, position.z);
 	}
+
+	public OrientedBoundingBox getBoundingBox() { return obb; }
 	
-	public BoundingBox getBoundingBox() {
-		return boundingBox;
-	}
+	public void setPosition(Vector3 position) { this.position.set(position); }
+	public Vector3 getPosition() { return position; }
 }

@@ -1,9 +1,10 @@
 package com.nickan.epiphany.model;
 
-import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.math.Vector3;
 import com.nickan.epiphany.framework.finitestatemachine.BaseState;
 import com.nickan.epiphany.framework.finitestatemachine.StateMachine;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message;
+import com.nickan.epiphany.framework.math.OrientedBoundingBox;
 import com.nickan.epiphany.model.characterstate.GlobalState;
 import com.nickan.epiphany.model.characterstate.IdleState;
 
@@ -17,7 +18,7 @@ public class Character extends MoveableEntity {
 	StatisticsHandler statsHandler;
 	
 	int targetId;
-	BoundingBox tarBoundingBox;
+	OrientedBoundingBox tarBoundingBox;
 	
 	StateMachine<Character> charStateMachine;
 	float attackDelay;
@@ -26,8 +27,8 @@ public class Character extends MoveableEntity {
 	public enum Action { IDLE, RUNNING, ATTACKING, DEAD };
 	private Action currentAction = Action.IDLE;
 
-	public Character(BoundingBox boundingBox, float sightRange, float speed) {
-		super(boundingBox, sightRange, speed);
+	public Character(Vector3 position, Vector3 dimension, Vector3 rotation, float sightRange, float speed) {
+		super(position, dimension, rotation, sightRange, speed);
 		charStateMachine = new StateMachine<Character>(this, IdleState.getInstance(), GlobalState.getInstance());
 		
 		this.targetId = -1;
@@ -58,8 +59,8 @@ public class Character extends MoveableEntity {
 	public void setCurrentAction(Action currentAction) { this.currentAction = currentAction; }
 	public Action getCurrentAction() { return currentAction; }
 	
-	public void setTargetBoundingBox(BoundingBox tarBoundingBox) { this.tarBoundingBox = tarBoundingBox; }
-	public BoundingBox getTargetBoundingBox() { return tarBoundingBox; }
+	public void setTargetBoundingBox(OrientedBoundingBox tarBoundingBox) { this.tarBoundingBox = tarBoundingBox; }
+	public OrientedBoundingBox getTargetBoundingBox() { return tarBoundingBox; }
 	
 	public void charChangeState(BaseState<Character> state) { charStateMachine.changeState(state); }
 	

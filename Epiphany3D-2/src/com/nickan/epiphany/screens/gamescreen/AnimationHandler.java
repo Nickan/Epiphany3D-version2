@@ -176,8 +176,7 @@ public class AnimationHandler {
 	 */
 	private void updateAnimationMatrix() {
 		Matrix4 aniMatrix = aniController.target.transform;
-		
-		Vector3 position = character.getBoundingBox().min;
+		Vector3 position = character.getPosition();
 		
 		// Set the position
 		aniMatrix.idt();

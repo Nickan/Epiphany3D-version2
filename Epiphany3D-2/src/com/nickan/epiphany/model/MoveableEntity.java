@@ -1,8 +1,8 @@
 package com.nickan.epiphany.model;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.nickan.epiphany.framework.math.Euler;
+import com.nickan.epiphany.framework.math.OrientedBoundingBox;
 
 /**
  * An entity class that knows everything about movement(I guess)
@@ -17,6 +17,7 @@ public abstract class MoveableEntity extends Entity {
 	
 	/** The view vector of the entity */
 	Vector3 forwardVector;
+	Vector3 currentForwardVector;
 	
 	/** Will be the basis forward when the forward key is pressed */
 	Vector3 camForwardVector;
@@ -25,41 +26,60 @@ public abstract class MoveableEntity extends Entity {
 	 * For the use of setting up temporary values for vectors that should not be overridden by
 	 * Vector3 operations such as add, sub, mul, etc.
 	 */
-	protected static Vector3 tempVec2 = new Vector3();
-	protected static Vector3 tempVec3 = new Vector3();
+	protected static final Vector3 tempVec1 = new Vector3();
+	protected static final Vector3 tempVec2 = new Vector3();
 	
 	public enum Movement { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
 	private Movement currentMovement = Movement.STOP;
 	
 	/** A movement set by the user */
 	private Movement commandedMovement = Movement.STOP;
+	
+	private CollisionDetector detector;
 
-	public MoveableEntity(BoundingBox boundingBox, float sightRange, float maxSpeed) {
-		super(boundingBox);
+	public MoveableEntity(Vector3 center, Vector3 dimension, Vector3 rotation, float sightRange, float maxSpeed) {
+		super(center, dimension, rotation);
 		this.sightRange = sightRange;
 		this.maxSpeed = maxSpeed;
 		
-		// Default is viewing to the right
+		// Default is viewing to the from
 		this.forwardVector = new Vector3(1.0f, 0, 0);
+		this.currentForwardVector = new Vector3();
+		
+		detector = new CollisionDetector(this);
 	}
-	
+
 	protected void update(float delta) {
+		// Set the velocity
 		tempVec1.set(forwardVector);
 		tempVec1.scl(forwardSpeed * delta);
 		
-		boundingBox.min.add(tempVec1);
-		update();
+		position.add(tempVec1);
+		rotate();
+		
+		detector.update();
+		super.update();
+	}
+	
+	/**
+	 * Handles the rotation
+	 */
+	public void rotate() {
+		if (forwardVector.x != currentForwardVector.x || forwardVector.y != currentForwardVector.y ||
+				forwardVector.z != currentForwardVector.z) {
+			currentForwardVector.set(forwardVector);
+			obb.setToLookAt(forwardVector, Vector3.Y);
+			//...
+			System.out.println("Set: " + forwardVector);
+		}
 	}
 	
 	public boolean isInRange(Vector3 centerTargetPos, float range) {
-		// Check if the length of the distance between the target is lower than the radius of the target
-		tempVec3.set(Vector3.Zero);
-		
 		// Get the origin of the target
 		tempVec2.set(centerTargetPos);
 		
 		// Get the view vector to the target
-		tempVec1.set(tempVec2.sub(boundingBox.getCenter()));
+		tempVec1.set(tempVec2.sub(position));
 		
 		return (tempVec1.len2() <= range * range);
 	}
@@ -74,11 +94,11 @@ public abstract class MoveableEntity extends Entity {
 		tempVec1.set(centerTargetPos);
 
 		// Get the view vector to the target
-		forwardVector.set(tempVec1.sub(boundingBox.getCenter()));
+		forwardVector.set(tempVec1.sub(obb.getCenter()));
 		forwardVector.nor();
 		
 		// Track the target, time-based movement
-		boundingBox.min.add(forwardVector.scl(maxSpeed * delta));
+		position.add(forwardVector.scl(maxSpeed * delta));
 	}
 	
 	/**
@@ -126,5 +146,8 @@ public abstract class MoveableEntity extends Entity {
 	public Vector3 getForwardVector() { return forwardVector; }
 	
 	
-	
+	//
+	public OrientedBoundingBox getBoxDetector() {
+		return detector.obb;
+	}
 }
