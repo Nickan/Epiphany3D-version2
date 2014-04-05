@@ -21,7 +21,12 @@ public class OrientedBoundingBox {
 	/**  For the vector of the corners, the original position  */
 	private final Vector3[] crnVec = new Vector3[CORNERS];
 
-	private Matrix4 transform;
+	public Matrix4 transform;
+	public Matrix4 invTransform;
+	
+	private Matrix4 mTranslate = new Matrix4();
+	private Matrix4 mRotate = new Matrix4();
+	private Matrix4 mScale = new Matrix4();
 	private static final Matrix4 m1 = new Matrix4();
 	
 	public OrientedBoundingBox(Vector3 center, Vector3 dimension, Vector3 rotation) {
@@ -36,7 +41,10 @@ public class OrientedBoundingBox {
 		}
 		
 		updateDimension();
+		updateTranslation();
 		updateRotation();
+		updateScale();
+		
 		updateCorners();
 	}
 	
@@ -49,12 +57,11 @@ public class OrientedBoundingBox {
 	}
 	
 	public void setToLookAt(Vector3 direction, Vector3 up) {
-		transform.idt();
-		
-		// Reverse the vector and inverts the matrix to correct the positioning of the corners
+		mRotate.idt();
+		// Reverse the direction and invert the rotation matrix
 		tmpVec.set(direction).scl(-1);
-		transform.setToLookAt(tmpVec, up);
-		transform.inv();
+		mRotate.setToLookAt(tmpVec, up);
+		mRotate.inv();
 		updateCorners();
 	}
 	
@@ -62,6 +69,7 @@ public class OrientedBoundingBox {
 	
 	public void setCenter(float x, float y, float z) {
 		center.set(x, y, z);
+		updateTranslation();
 		updateCorners();
 	}
 	
@@ -72,7 +80,6 @@ public class OrientedBoundingBox {
 		updateDimension();
 		updateCorners();
 	}
-	
 	
 	private void updateDimension() {
 		// Imagining facing X (1, 0, 0)
@@ -97,32 +104,44 @@ public class OrientedBoundingBox {
 		crnVec[7].set(-dimension.x / 2, dimension.y / 2, dimension.z / 2);
 	}
 	
+	private void updateTranslation() {
+		mTranslate.idt();
+		mTranslate.translate(center);
+	}
+	
 	private void updateRotation() {
 		// Pitch
 		m1.idt();
-		m1.rotate(Vector3.X, (float) Math.toDegrees(rotation.x));
-		transform.idt();
-		transform.mul(m1);
+		m1.rotate(Vector3.X, (float) rotation.x);
+		mRotate.idt();
+		mRotate.mul(m1);
 
 		// Yaw (Heading)
 		m1.idt();
-		m1.rotate(Vector3.Y, (float) Math.toDegrees(rotation.y));
-		transform.mul(m1);
+		m1.rotate(Vector3.Y, (float) rotation.y);
+		mRotate.mul(m1);
 
 		// Roll (Bank)
 		m1.idt();
-		m1.rotate(Vector3.Z, (float) Math.toDegrees(rotation.z));
-		transform.mul(m1);
+		m1.rotate(Vector3.Z, (float) rotation.z);
+		mRotate.mul(m1);
+	}
+	
+	private void updateScale() {
+		mScale.idt();
+		mScale.scale(dimension.x, dimension.y, dimension.z);
 	}
 	
 	private void updateCorners() {
+		transform.idt();
+		transform.mul(mTranslate);
+		transform.mul(mRotate);
+		transform.mul(mScale);
+		
 		for (int index = 0; index < corners.length; ++index) {
 			// Set the corners
 			corners[index].set(crnVec[index]);
 			corners[index].mul(transform);
-			
-			// Adding the position
-			corners[index].add(center);
 		}
 	}
 	
