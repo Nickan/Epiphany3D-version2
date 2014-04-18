@@ -18,11 +18,4 @@ public interface BaseState<EntityType> {
 	
 	public abstract boolean handleMessage(EntityType entity, Message message);
 	
-	/**
-	 * 
-	 * 
-	 * @return - The name of the state
-	 */
-	public abstract String getStatus();
-	
 }
