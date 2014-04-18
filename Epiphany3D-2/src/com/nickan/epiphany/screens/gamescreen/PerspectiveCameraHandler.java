@@ -12,7 +12,7 @@ public class PerspectiveCameraHandler {
 	PerspectiveCamera cam;
 	
 	/** Determines how far away the camera from the basePosition */
-	private float zoomScale = 5.0f;
+	public float zoomScale = 5.0f;
 
 	private static final Vector3 tempVector = new Vector3();
 	
@@ -37,7 +37,8 @@ public class PerspectiveCameraHandler {
 		tempVector.add(basePosition);
 		
 		// Move up the camera a bit
-		tempVector.y += 1.0f;
+		tempVector.y += 0.25f;
 		cam.position.set(tempVector);
 	}
+	
 }
