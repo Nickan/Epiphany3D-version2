@@ -49,6 +49,7 @@ public class Character extends MoveableEntity {
 		setAttackDelay(1.0f);
 		resetAttackTimer();
 		statsHandler = new StatisticsHandler();
+		inventory = new Inventory(statsHandler);
 		steeringBehavior = new SteeringBehavior(this);
 	}
 	
