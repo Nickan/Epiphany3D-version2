@@ -15,8 +15,6 @@ public class CollisionDetector {
 	private static final Vector3 tmpVec1 = new Vector3();
 	private static final Vector3 tmpVec2 = new Vector3();
 	
-	private float scaleZ = 2.0f;
-	
 	public CollisionDetector(MoveableEntity entity) {
 		this.entity = entity;
 		
@@ -26,7 +24,6 @@ public class CollisionDetector {
 		Vector3 dimension = new Vector3(box.getDimension());
 		Vector3 rotation = new Vector3(box.getRotation());
 		
-		dimension.z *= scaleZ;
 		obb = new OrientedBoundingBox(center, dimension, rotation);
 	}
 	
@@ -45,25 +42,33 @@ public class CollisionDetector {
 		
 		tmpVec1.set(entBound.getCenter());
 		
-		// Place the bound in front
-		tmpVec2.set(entity.getForwardVector());
-		tmpVec2.scl(entBound.getDimension().z / 2);
+		// Place the point in front of the bound
+		float frontDepth = entity.getBoundingBox().getDimension().z / 2;
+		tmpVec2.set(entity.getHeading()).scl(frontDepth);
 		tmpVec1.add(tmpVec2);
 		
-		// Place the bound based on the scale of the bound about z-axis
-		tmpVec2.set(entity.getForwardVector());
-		tmpVec2.scl(scaleZ / 2);
+		// Compensate the center position of the collision box
+		float collisionDepth = obb.getDimension().z / 2;
+		tmpVec2.set(entity.getHeading()).scl(collisionDepth);
+		tmpVec1.add(tmpVec2);
 		
-		obb.setCenter(tmpVec1.add(tmpVec2));
+		// Compensating the scale of the collision obb
+//		tmpVec2.set(entity.getHeading()).scl(obb.getDimension().z / 2);
+		
+		obb.setCenter(tmpVec1);
 	}
 	
 	private void rotate() {
-		Vector3 entView = entity.getForwardVector();
+		Vector3 entView = entity.getHeading();
 		// Will only set the view if the view of the entity has changed
 		if (view.x != entView.x || view.y != entView.y || view.z != entView.z) {
 			view.set(entView);
-			obb.setToLookAt(entity.getForwardVector(), Vector3.Y);
+			obb.setToLookAt(entity.getHeading(), Vector3.Y);
 		}
+	}
+	
+	public void setCollisionDepth(float depth) {
+		obb.setDimension(obb.getDimension().x, obb.getDimension().y, depth);
 	}
 	
 }
