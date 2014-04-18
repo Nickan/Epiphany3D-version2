@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
-import com.nickan.epiphany.model.MoveableEntity.Movement;
+import com.nickan.epiphany.model.characterstate.MovingState.Movement;
 import com.nickan.epiphany.model.inventory.Inventory;
 import com.nickan.epiphany.screens.gamescreen.World.State;
 
@@ -131,7 +131,6 @@ public class AllGameButtonsView {
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
 				MessageDispatcher.sendMessage(-10, world.player.getId(), 0, 
 						MessageType.PLAYER_MOVE, Movement.FORWARD);
-				
 				world.stopCameraRotation = false;
 				return true;
 			}

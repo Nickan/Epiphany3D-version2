@@ -6,7 +6,6 @@ import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageD
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.MessageType;
 import com.nickan.epiphany.framework.math.OrientedBoundingBox;
 import com.nickan.epiphany.model.Character;
-import com.nickan.epiphany.model.MoveableEntity.Movement;
 
 public class GlobalState implements BaseState<Character> {
 	private static final GlobalState instance = new GlobalState();
@@ -33,10 +32,8 @@ public class GlobalState implements BaseState<Character> {
 	public boolean handleMessage(Character entity, Message message) {
 		switch (message.type) {
 		case PLAYER_MOVE:
-			Movement movement = (Movement) message.extraInfo;
-			entity.setCommandedMovement(movement);
 			entity.charChangeState(MovingState.getInstance());
-			return true;
+			return false;
 			
 		case ATTACK:
 			MessageDispatcher.sendMessage(message.receiverId, message.senderId, 0, 
@@ -63,7 +60,7 @@ public class GlobalState implements BaseState<Character> {
 		return false;
 	}
 	
-	public String getStatus() {
+	public String toString() {
 		return "Global State";
 	}
 	

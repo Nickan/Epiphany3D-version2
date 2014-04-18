@@ -2,6 +2,7 @@ package com.nickan.epiphany.screens.gamescreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -9,8 +10,12 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.nickan.epiphany.model.Zombie;
 
@@ -29,13 +34,13 @@ public class WorldRenderer {
 	private Environment environment;
 	private ModelBatch modelBatch;
 	private PerspectiveCamera perspectiveCam;
-//	private PointLight pointLight;
+	private PointLight pointLight;
 	
 	private ModelInstance player;
 	private Array<ModelInstance> zombies;
 	
 	// For fixing problem light
-	private DirectionalLight dirLight;
+//	private DirectionalLight dirLight;
 	
 	/** Array of ModelInstances that have same Environment effect on them, else don't add it here */
 	private Array<ModelInstance> worldModelInstances;
@@ -44,6 +49,10 @@ public class WorldRenderer {
 	private Array<AnimationHandler> aniHandlers;
 	
 	PerspectiveCameraHandler camHandler;
+	
+	
+	// For debugging
+	private ShapeRenderer sRenderer = new ShapeRenderer();
 	
 	public WorldRenderer(World world) {
 		this.world = world;
@@ -56,13 +65,13 @@ public class WorldRenderer {
 		// Set up the viewport of the game
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
-//		pointLight = new PointLight().set(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 10.0f);
+		pointLight = new PointLight().set(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 5f);
 		environment = new Environment();
 		
 		// For fixing...
-		dirLight = new DirectionalLight().set(1.0f, 10.0f, 1.0f, 0, -1.0f, 0);
-		environment.add(dirLight);
-//		environment.add(pointLight);
+//		dirLight = new DirectionalLight().set(1.0f, 10.0f, 1.0f, 0, -1.0f, 0);
+//		environment.add(dirLight);
+		environment.add(pointLight);
 		
 		// Setting up the camera
 		float fov = 67;
@@ -121,13 +130,15 @@ public class WorldRenderer {
 			// Then add the needed models
 			if (id.startsWith("ground")) {
 				worldModelInstances.add(newInstance);
+			} else if (id.startsWith("wall")) {
+				worldModelInstances.add(newInstance);
 			}
 		}
 		
 		// Player's model
 		player = new ModelInstance(assetManager.get("gamescreen/graphics3d/player.g3db", Model.class));
 
-				
+	
 		worldModelInstances.add(player);
 	}
 	
@@ -151,7 +162,7 @@ public class WorldRenderer {
 		
 		worldModelInstances.addAll(zombies);
 	}
-
+	
 	public void render(float delta) {
 		// The assets should only be initialize once all the ModelInstances and the scene of the game are loaded
 		if (loadingResources && assetManager.update()) {
@@ -160,11 +171,13 @@ public class WorldRenderer {
 			loadingResources = false;
 		}
 		
+		// Set the position of the point light just about above the players position
+		pointLight.position.set(world.player.getBoundingBox().getCenter()).y = 1.5f;
+		
 		// Update the AnimationHandlers
 		for (AnimationHandler handler: aniHandlers) {
 			handler.update(delta);
 		}
-		
 		
 		// Clear the background, using Gdx.gl10 will give weird result
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
@@ -178,7 +191,54 @@ public class WorldRenderer {
 		
 		modelBatch.end();
 		
-		camHandler.update(world.player.getBoundingBox().min, world.getCamDirection(), delta);
+		camHandler.update(world.player.getBoundingBox().getCenter(), world.getCamDirection(), delta);
+//		camHandler.update(world.zombies.get(0).getBoundingBox().getCenter(), world.getCamDirection(), delta);
+		
+		debug();
+	}
+	
+	
+	// For debugging methods
+	private void debug() {
+		sRenderer.setProjectionMatrix(perspectiveCam.combined);
+		sRenderer.begin(ShapeType.Line);
+		sRenderer.setColor(Color.WHITE);
+		
+		// Drawing the tiles
+		for (int z = 0; z < 10; ++z) {
+			for (int x = 0; x < 10; ++x) {
+				sRenderer.identity();
+				sRenderer.translate(x / 2f, 0, z / 2f);
+				sRenderer.rotate(1, 0, 0, 90);
+				
+				// Representing the node, rect and circle form
+			//	sRenderer.rect(0, 0, 0.5f, 0.5f);
+			//	sRenderer.circle(0.25f, 0.25f, 0.25f, 10);
+			}
+		}
+		
+		
+		// Drawing the node occupied by the entity
+		Vector3 zomPos = world.zombies.get(0).getPosition();
+		sRenderer.identity();
+		sRenderer.translate(zomPos.x, 0, zomPos.z);
+		sRenderer.rotate(1, 0, 0, 90);
+		sRenderer.circle(0, 0, world.zombies.get(0).getBoundingBox().getDimension().x / 2, 10);
+		
+		sRenderer.end();
+		
+		sRenderer.begin(ShapeType.Line);
+		// For OBB
+		drawCorners(world.player.getBoundingBox().getCorners());
+	//	drawCorners(world.player.getBoxDetector().getCorners());
+		
+		for (Zombie zombie: world.zombies) {
+			drawCorners(zombie.getBoundingBox().getCorners());
+			drawCorners(zombie.getBoxDetector().getCorners());
+		}
+		sRenderer.end();
+
+		sRenderer.end();
 	}
 	
 	public void resize(int width, int height) {
@@ -192,6 +252,25 @@ public class WorldRenderer {
 	public void dispose() {
 		assetManager.dispose();
 		modelBatch.dispose();
+	}
+	
+	private void drawCorners(Vector3[] corners) {
+		sRenderer.setColor(Color.YELLOW);
+		sRenderer.identity();
+		
+		// Back lower left to back lower right
+		sRenderer.line(corners[0], corners[1]);
+		// Back lower left to back upper left
+		sRenderer.line(corners[0], corners[2]);
+		// Back lower left to front lower left
+		sRenderer.line(corners[0], corners[4]);
+		
+		// Front upper right to front upper left
+		sRenderer.line(corners[7], corners[6]);
+		// Front upper right to front lower right
+		sRenderer.line(corners[7], corners[5]);
+		// Front upper right to back upper right
+		sRenderer.line(corners[7], corners[3]);		
 	}
 	
 }

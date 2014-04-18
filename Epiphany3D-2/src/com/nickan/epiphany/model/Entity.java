@@ -11,8 +11,7 @@ public abstract class Entity extends BaseEntity {
 	
 	public Entity(Vector3 position, Vector3 dimension, Vector3 rotation) {
 		this.position = position;
-		obb = new OrientedBoundingBox(new Vector3(position.x,
-				position.y + dimension.y / 2, position.z),
+		obb = new OrientedBoundingBox(new Vector3(position.x, position.y + dimension.y / 2, position.z),
 				dimension, rotation);
 	}
 	

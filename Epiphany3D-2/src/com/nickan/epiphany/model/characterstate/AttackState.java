@@ -75,13 +75,7 @@ public class AttackState implements BaseState<Character> {
 
 	@Override
 	public boolean handleMessage(Character entity, Message message) {
-		switch (message.type) {
-		case COLLISION_DETECTED_AHEAD:
-			
-			return true;
-		default:
-			return false;
-		}
+		return false;
 	}
 	
 	@Override

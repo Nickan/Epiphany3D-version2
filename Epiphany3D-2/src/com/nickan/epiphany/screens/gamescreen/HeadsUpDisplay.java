@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.nickan.epiphany.model.Player;
+import com.nickan.epiphany.model.Character;
 import com.nickan.epiphany.model.inventory.Consumable;
 import com.nickan.epiphany.model.inventory.Inventory;
 import com.nickan.epiphany.model.inventory.Item;
@@ -38,7 +38,7 @@ public class HeadsUpDisplay {
 		batch.end();
 	}
 	
-	public void drawPauseHud(SpriteBatch batch, Player player) {
+	public void drawPauseHud(SpriteBatch batch, Character player) {
 		batch.begin();
 		batch.draw(skin.getRegion("statsbox"), strPos.x, strPos.y, unitX * 1.5f, unitY * 1.5f);
 		batch.draw(skin.getRegion("statsbox"), dexPos.x, dexPos.y, unitX * 1.5f, unitY * 1.5f);

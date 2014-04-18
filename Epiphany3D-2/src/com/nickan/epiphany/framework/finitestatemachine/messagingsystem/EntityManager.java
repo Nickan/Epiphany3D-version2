@@ -27,6 +27,11 @@ public class EntityManager {
 	}
 
 	public static  boolean deleteEntity(int id) {
+		if (id < 0 || id > QUANTITY) {
+			System.out.println("ID is invalid");
+			return false;
+		}
+		
 		if (entityList[id] != null) {
 			entityList[id] = null;
 			return true;
@@ -35,6 +40,9 @@ public class EntityManager {
 	}
 
 	public static BaseEntity getEntity(int id) {
+		if (id < 0 || id > QUANTITY) {
+			return null;
+		}
 		return entityList[id];
 	}
 

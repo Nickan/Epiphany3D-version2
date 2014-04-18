@@ -1,5 +1,7 @@
 package com.nickan.epiphany.screens.gamescreen;
 
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 
@@ -22,21 +24,22 @@ public class WorldController implements InputProcessor {
 		
 		previousTouch = new Vector2();
 	}
-	
+
 	@Override
 	public boolean keyDown(int keycode) {
-		/*
+		
 		switch (keycode) {
-		case Keys.W: world.player.setMovement(Movement.FORWARD);
+		case Keys.W:
+			world.stopUpdate = false;
 			break;
-		case Keys.S: world.player.setMovement(Movement.BACKWARD);
+		case Keys.S: 
 			break;
-		case Keys.A: world.player.setMovement(Movement.LEFT);
+		case Keys.A: 
 			break;
-		case Keys.D: world.player.setMovement(Movement.RIGHT);
+		case Keys.D: 
 			break;
 		}
-		*/
+		
 
 		return false;
 	}
@@ -46,6 +49,20 @@ public class WorldController implements InputProcessor {
 		/*
 		world.player.setMovement(Movement.STOP);
 		*/
+		switch (keycode) {
+		case Keys.W:
+		//	world.stopUpdate = false;
+			break;
+		case Keys.S:
+			for (int index = 0; index < 5; ++index) {
+				System.out.println("");
+			}
+			break;
+		case Keys.A: 
+			break;
+		case Keys.D: 
+			break;
+		}
 		return false;
 	}
 	
@@ -88,7 +105,7 @@ public class WorldController implements InputProcessor {
 	
 	@Override
 	public boolean scrolled(int amount) {
-		// TODO Auto-generated method stub
+		worldRenderer.camHandler.zoomScale += amount * 3 * Gdx.graphics.getDeltaTime();
 		return false;
 	}
 	
