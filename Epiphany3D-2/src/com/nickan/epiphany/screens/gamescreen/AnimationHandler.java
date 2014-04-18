@@ -53,7 +53,7 @@ public class AnimationHandler {
 		runningPlaySpeed = runningFrameNum / DEFAULT_FPS;
 		attackAnimationPlaySpeed = attackingFrameNum / DEFAULT_FPS;
 		
-		lookAtVector = new Vector3(character.getForwardVector());
+		lookAtVector = new Vector3(character.getHeading());
 		
 		setAttackAnimationSpeed(character.getAttackDelay());
 	}
@@ -185,7 +185,8 @@ public class AnimationHandler {
 		// Set the rotation
 		aniTempMatrix.idt();
 		
-		lookAtVector.set(character.getForwardVector());
+		lookAtVector.set(character.getHeading());
+		
 		// Reverse the result
 		lookAtVector.scl(-1);
 		
