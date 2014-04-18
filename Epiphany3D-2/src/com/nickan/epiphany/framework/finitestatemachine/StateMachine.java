@@ -12,6 +12,9 @@ public class StateMachine<EntityType> {
 		this.entity = entity;
 		this.currentState = currentState;
 		this.globalState = globalState;
+		
+		currentState.start(entity);
+		globalState.start(entity);
 	}
 	
 	public void update(float delta) {
