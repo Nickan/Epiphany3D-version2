@@ -5,19 +5,20 @@ import com.nickan.epiphany.framework.math.Euler;
 import com.nickan.epiphany.framework.math.OrientedBoundingBox;
 
 /**
- * An entity class that knows everything about movement(I guess)
+ * I will have a major overhaul, will study and implement the steering behavior
  * @author Nickan
  *
  */
 public abstract class MoveableEntity extends Entity {
+	Vector3 velocity;
+	Vector3 heading;
+	float mass;
+	float maxForce;
+	// In degrees
+	float maxTurnRate;
 	float maxSpeed;
-	float forwardSpeed;
-	float sideSpeed;
-	float sightRange;
 	
-	/** The view vector of the entity */
-	Vector3 forwardVector;
-	Vector3 currentForwardVector;
+	float sightRange;
 	
 	/** Will be the basis forward when the forward key is pressed */
 	Vector3 camForwardVector;
@@ -29,54 +30,45 @@ public abstract class MoveableEntity extends Entity {
 	protected static final Vector3 tempVec1 = new Vector3();
 	protected static final Vector3 tempVec2 = new Vector3();
 	
-	public enum Movement { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
-	private Movement currentMovement = Movement.STOP;
+	protected CollisionDetector detector;
 	
-	/** A movement set by the user */
-	private Movement commandedMovement = Movement.STOP;
-	
-	private CollisionDetector detector;
-
-	public MoveableEntity(Vector3 center, Vector3 dimension, Vector3 rotation, float sightRange, float maxSpeed) {
-		super(center, dimension, rotation);
-		this.sightRange = sightRange;
+	public MoveableEntity(Vector3 pos, Vector3 dim, Vector3 rot, float mass, float maxForce, 
+			float maxTurnRate, float maxSpeed, float sightRange) {
+		super(pos, dim, rot);
+		this.mass = mass;
+		this.maxForce = maxForce;
+		this.maxTurnRate = maxTurnRate;	
 		this.maxSpeed = maxSpeed;
+		this.sightRange = sightRange;
 		
 		// Default is viewing to the from
-		this.forwardVector = new Vector3(1.0f, 0, 0);
-		this.currentForwardVector = new Vector3();
+		heading = new Vector3();
+		setHeading(Vector3.Z);
+		velocity = new Vector3();
 		
 		detector = new CollisionDetector(this);
 	}
 
 	protected void update(float delta) {
-		// Set the velocity
-		tempVec1.set(forwardVector);
-		tempVec1.scl(forwardSpeed * delta);
-		
-		position.add(tempVec1);
-		rotate();
-		
 		detector.update();
 		super.update();
+		rotate();
 	}
 	
 	/**
 	 * Handles the rotation
 	 */
-	public void rotate() {
-		if (forwardVector.x != currentForwardVector.x || forwardVector.y != currentForwardVector.y ||
-				forwardVector.z != currentForwardVector.z) {
-			currentForwardVector.set(forwardVector);
-			obb.setToLookAt(forwardVector, Vector3.Y);
-			//...
-			System.out.println("Set: " + forwardVector);
-		}
+	private void rotate() {
+	//	if (heading.x != currentForwardVector.x || heading.y != currentForwardVector.y ||
+	//			heading.z != currentForwardVector.z) {
+	//		currentForwardVector.set(heading);
+			obb.setToLookAt(heading, Vector3.Y);
+	//	}	
 	}
 	
-	public boolean isInRange(Vector3 centerTargetPos, float range) {
+	public boolean isInRange(Vector3 targetPos, float range) {
 		// Get the origin of the target
-		tempVec2.set(centerTargetPos);
+		tempVec2.set(targetPos);
 		
 		// Get the view vector to the target
 		tempVec1.set(tempVec2.sub(position));
@@ -84,39 +76,10 @@ public abstract class MoveableEntity extends Entity {
 		return (tempVec1.len2() <= range * range);
 	}
 	
-	/**
-	 * Approaches the target
-	 * @param centerTargetPos
-	 * @param delta
-	 */
-	public void seek(Vector3 centerTargetPos, float delta) {
-		// Get the origin of the target
-		tempVec1.set(centerTargetPos);
-
-		// Get the view vector to the target
-		forwardVector.set(tempVec1.sub(obb.getCenter()));
-		forwardVector.nor();
-		
-		// Track the target, time-based movement
-		position.add(forwardVector.scl(maxSpeed * delta));
-	}
-	
-	/**
-	 * Set up the camera's direction to forward direction, setting up the y to zero then normalized
-	 */
-	public void forwardVectorToCamDirection() {
-		forwardVector.set(camForwardVector);
-		forwardVector.y = 0;
-		forwardVector.nor();
-	}
-	
 	public Vector3 getRightVector() {
-		tempVec1.set(forwardVector);
+		tempVec1.set(camForwardVector);
 		return Euler.getOrthogonalAxes(tempVec1, Vector3.Y);
 	}
-	
-	public void setForwardSpeed(float forwardSpeed) { this.forwardSpeed = forwardSpeed; };
-	public float getForwardSpeed() { return forwardSpeed; }
 	
 	public void setMaxSpeed(float maxSpeed) { this.maxSpeed = maxSpeed; }
 	public float getMaxSpeed() { return maxSpeed; }
@@ -125,29 +88,25 @@ public abstract class MoveableEntity extends Entity {
 	public float getSightRange() { return sightRange; }
 	
 	public void setCamForwardVector(Vector3 camForwardVector) { this.camForwardVector = camForwardVector; }
+	public Vector3 getCamForwardVector() { return camForwardVector; }
 	
-	public void setCommandedMovement(Movement movement) { this.commandedMovement = movement; }
-	public Movement getCommandedMovement() { return commandedMovement; }
-	
-	public void setCurrentMovement(Movement currentMovement) { this.currentMovement = currentMovement; }
-	public Movement getCurrentMovement() { return currentMovement; }
-	
-	/**
-	 * Will ignore the y movement and be normalized
-	 * @param forwardVector
-	 */
-	public void setForwardVector(Vector3 forwardVector) {
-		this.forwardVector.set(forwardVector);
-		
-		// Set the elevation movement to 0
-		this.forwardVector.y = 0;
-		this.forwardVector.nor();
-	}
-	public Vector3 getForwardVector() { return forwardVector; }
-	
+	public void setHeading(Vector3 heading) { this.heading.set(heading); }
+	public Vector3 getHeading() { return heading; }	
 	
 	//
-	public OrientedBoundingBox getBoxDetector() {
-		return detector.obb;
-	}
+	public OrientedBoundingBox getBoxDetector() { return detector.obb; }
+
+	public Vector3 getVelocity() { return velocity; }
+	public void setVelocity(Vector3 velocity) { this.velocity = velocity; }
+
+	public float getMass() { return mass; }
+	public void setMass(float mass) { this.mass = mass; }
+
+	public float getMaxForce() { return maxForce; }
+	public void setMaxForce(float maxForce) { this.maxForce = maxForce; }
+	
+	public float getMaxTurnRate() { return maxTurnRate; }
+	public void setMaxTurnRate(float maxTurnRate) { this.maxTurnRate = maxTurnRate; }
+	
+	
 }
