@@ -11,6 +11,8 @@ import com.nickan.epiphany.model.SteeringBehavior;
 
 public class AttackState implements BaseState<Character> {
 	private static final AttackState instance = new AttackState();
+	private static final Vector3 tmpVec = new Vector3();
+	private static final Vector3 tmpVec2 = new Vector3();
 
 	@Override
 	public void start(Character entity) {
@@ -32,19 +34,27 @@ public class AttackState implements BaseState<Character> {
 		Character targetChar = (Character) EntityManager.getEntity(entity.getTargetId());
 		if (targetChar != null) {
 			SteeringBehavior behavior = entity.getSteeringBehavior();
-		//	if (entity.isInRange(targetChar.getPosition(), 1)) {
-			if (OrientedBoundingBox.collides(entity.getBoundingBox(), targetChar.getBoundingBox())) {
+			
+			entity.steeringBehavior.setTargetChar(targetChar);
+			if (isAttacking(entity, targetChar)) {
 				updateAttack(entity, delta);
 				behavior.resetBehavior();
 				
 				// Face the target
-				Vector3 faceVector = new Vector3(targetChar.getPosition()).sub(entity.getPosition());
-				entity.setHeading(faceVector.nor());
+				tmpVec.set(targetChar.getPosition()).sub(entity.getPosition());
+				entity.setHeading(tmpVec.nor());
 			} else {
-				behavior.setTargetPos(targetChar.getBoundingBox().getCenter());
-				behavior.seekOn();
-				behavior.avoidanceOn();
-				entity.setCurrentAction(Action.RUNNING);
+				
+				Vector3 tarPos = targetChar.getBoundingBox().getCenter();
+				
+				if (entity.isInRange(tarPos, entity.getSightRange())) {
+					behavior.setTargetPos(tarPos);
+					behavior.seekOn();
+					behavior.avoidanceOn();
+					entity.setCurrentAction(Action.RUNNING);
+				} else {
+					entity.charChangeState(IdleState.getInstance());
+				}
 			}
 		}
 		
@@ -65,11 +75,43 @@ public class AttackState implements BaseState<Character> {
 			entity.incAttackTimer(-entity.getAttackDelay());
 		}
 	}
-
+	
+	/**
+	 * @param entity
+	 * @param tarChar
+	 * @return - If the entity is attacking, for now just use the range, it should be changed
+	 * 				like if already attacking then the target gets out of range, it should continue
+	 * 				finishing its attack, before seeking the target again.
+	 */
+	private boolean isAttacking(Character entity, Character targetChar) {
+		boolean useSphereDetection = true; // If whether to use sphere or OBB for collision
+		
+		if (useSphereDetection) {
+			OrientedBoundingBox entBox = entity.getBoundingBox();
+			OrientedBoundingBox tarBox = targetChar.getBoundingBox();
+			// No elevation
+			tmpVec.set(entBox.getCenter()).y = 0;
+			tmpVec2.set(tarBox.getCenter()).y = 0;
+			float dist = tmpVec.dst2(tmpVec2);
+			
+			// For now, use the x-axis to dictate the radius of the entity
+			float entityRadius = entBox.getDimension().x / 2;
+			float targetRadius = tarBox.getDimension().x / 2;
+			float range = entityRadius + targetRadius;
+			
+			return (dist < range * range);
+		}
+		
+		/*
+		 *  The problem with this OBB detection is that the radius of the center varies when
+		 *  it rotates, so the radius varies which have undesired result
+		 */
+		return OrientedBoundingBox.collides(entity.getBoundingBox(), targetChar.getBoundingBox());
+	}
+	
+	
 	@Override
 	public void exit(Character entity) {
-		entity.setTargetBoundingBox(null);
-		entity.setTargetId(-1);
 		entity.setCurrentAction(Action.IDLE);
 	}
 
