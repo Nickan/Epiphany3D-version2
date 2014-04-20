@@ -188,46 +188,8 @@ public class SteeringBehavior {
 	}
 	
 	private Vector3 obstacleAvoidance(Array<Zombie> zombies) {
-		float nearestObstacleDistSqr = Float.MAX_VALUE;
-		Zombie nearestZom = null;
-		Vector3 localCoorCrn = new Vector3();
-		
-		// Can't use enhanced for loop, iterator exception
-		for (int index = 0; index < zombies.size; ++index) {
-			Zombie zombie = zombies.get(index);
-			
-			// Don't include himself
-			if (character == zombie) {
-				continue;
-			}
-			
-			float viewRange = 3.0f;
-			if (character.isInRange(zombie.getPosition(), viewRange)) {
-				
-				// Set the depth(or length) of the collision detector box
-				float speed = character.getVelocity().len();
-				float detectorDefaultLength = 0.5f;
-				float detectorLength = (speed / character.getMaxSpeed()) * detectorDefaultLength;
-				character.detector.setCollisionDepth(detectorLength);
-				
-				//...
-			//	System.out.println("Detector length: " + detectorLength);
-			//	System.out.println("Velocity: " + character.getVelocity());
-				
-				// If the zombie's bounds collides
-				// Get the coordinates of the collided corner
-				tmpVec1.set(OrientedBoundingBox.getCollidedCorner(character.getBoxDetector(), 
-						zombie.getBoundingBox()));
-				// Check if the coordinates is valid
-				if (tmpVec1.len2() < nearestObstacleDistSqr) {
-					localCoorCrn.set(tmpVec1);
-					nearestObstacleDistSqr = tmpVec1.len2();
-					nearestZom = zombie;
-				}
-				
-			}
-		}
-		
+		Zombie nearestZom = getNearestZombie(zombies);
+
 		steeringForce.set(Vector3.Zero);
 		if (nearestZom != null) {
 			// The basis of the steering force avoidance is to determine the distance of the nearest
@@ -285,6 +247,58 @@ public class SteeringBehavior {
 //			System.out.println("Obstacle detected");
 		}
 		return steeringForce;
+	}
+	
+	private Zombie getNearestZombie(Array<Zombie> zombies) {
+		// FIXME implements the sphere collision detection
+		boolean useSphere = false;
+		
+		float nearestObstacleDistSqr = Float.MAX_VALUE;
+		Vector3 localCoorCrn = new Vector3();
+		Zombie nearestZom = null;
+		
+		// Can't use enhanced for loop, iterator exception
+		for (int index = 0; index < zombies.size; ++index) {
+			Zombie zombie = zombies.get(index);
+
+			// Don't include itself and the target
+			if (character == zombie || targetChar == zombie) {
+				continue;
+			}
+
+			// FIXME posing a potential problem when the length of the detector box
+			// goes way too long
+			
+			// Limits the checking of the bounds by the view range
+			float viewRange = 3.0f;
+			if (character.isInRange(zombie.getPosition(), viewRange)) {
+
+				// Set the depth(or length) of the collision detector box
+				float speed = character.getVelocity().len();
+				float detectorDefaultLength = 0.5f;
+				float detectorLength = (speed / character.getMaxSpeed())
+						* detectorDefaultLength;
+				character.detector.setCollisionDepth(detectorLength);
+
+				// ...
+				// System.out.println("Detector length: " + detectorLength);
+				// System.out.println("Velocity: " + character.getVelocity());
+
+				// If the zombie's bounds collides
+				// Get the coordinates of the collided corner
+				tmpVec1.set(OrientedBoundingBox.getCollidedCorner(
+						character.getBoxDetector(), zombie.getBoundingBox()));
+				// Check if the coordinates is valid
+				if (tmpVec1.len2() < nearestObstacleDistSqr) {
+					localCoorCrn.set(tmpVec1);
+					nearestObstacleDistSqr = tmpVec1.len2();
+					nearestZom = zombie;
+				}
+
+			}
+		}
+		
+		return nearestZom;
 	}
 	
 	
