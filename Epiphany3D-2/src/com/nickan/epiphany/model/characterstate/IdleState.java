@@ -28,7 +28,7 @@ public class IdleState implements BaseState<Character> {
 		}
 		
 		// If the target character is in range, set to attack state
-		if (entity.isInRange(targetChar.getPosition(), entity.getSightRange())) {
+		if (entity.isInRange(targetChar.getBoundingBox().getCenter(), entity.getSightRange())) {
 			entity.charChangeState(AttackState.getInstance());
 		}
 	}
