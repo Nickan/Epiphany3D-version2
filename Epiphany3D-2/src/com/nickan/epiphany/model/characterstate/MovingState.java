@@ -19,8 +19,7 @@ public class MovingState implements BaseState<Character> {
 	public enum Movement { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
 	private Movement currentMovement = Movement.STOP;
 	
-	private static final Vector3 tmpVec1 = new Vector3();
-	private static final Vector3 tmpVec2 = new Vector3();
+	private static final Vector3 tmpVec = new Vector3();
 	
 	@Override
 	public void start(Character entity) {
@@ -31,24 +30,24 @@ public class MovingState implements BaseState<Character> {
 	public void update(Character entity, float delta) {
 		switch (currentMovement) {
 		case FORWARD:
-			tmpVec1.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
-			tmpVec1.add(entity.getCamForwardVector());
-			entity.steeringBehavior.setTargetPos(tmpVec1);
+			tmpVec.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
+			tmpVec.add(entity.getCamForwardVector());
+			entity.steeringBehavior.setTargetPos(tmpVec);
 			break;
 		case BACKWARD:
-			tmpVec1.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
-			tmpVec1.sub(entity.getCamForwardVector());
-			entity.steeringBehavior.setTargetPos(tmpVec1);
+			tmpVec.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
+			tmpVec.sub(entity.getCamForwardVector());
+			entity.steeringBehavior.setTargetPos(tmpVec);
 			break;
 		case LEFT:
-			tmpVec1.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
-			tmpVec1.sub(entity.getRightVector());
-			entity.steeringBehavior.setTargetPos(tmpVec1);
+			tmpVec.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
+			tmpVec.sub(entity.getRightVector());
+			entity.steeringBehavior.setTargetPos(tmpVec);
 			break;
 		case RIGHT:
-			tmpVec1.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
-			tmpVec1.add(entity.getRightVector());
-			entity.steeringBehavior.setTargetPos(tmpVec1);
+			tmpVec.set(entity.getBoundingBox().getCenter()).y = 0; // No elevation
+			tmpVec.add(entity.getRightVector());
+			entity.steeringBehavior.setTargetPos(tmpVec);
 			break;
 		default:
 			break;
@@ -71,6 +70,7 @@ public class MovingState implements BaseState<Character> {
 				entity.charChangeState(IdleState.getInstance());
 			} else {
 				entity.steeringBehavior.seekOn();
+				entity.steeringBehavior.avoidanceOn();
 				entity.setCurrentAction(Action.RUNNING);
 			}
 			return true;
