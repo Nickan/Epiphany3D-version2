@@ -38,6 +38,9 @@ public class World {
 	public static final float WORLD_UNIT_WIDTH = 0.5F;
 	public static final float WORLD_UNIT_DEPTH = 0.5F;
 	
+	private static final Vector3 tmpVec = new Vector3();
+	private static final Vector3 tmpVec2 = new Vector3();
+	
 	public World() {
 		camRotation = new Vector3();
 		camDirection = new Vector3();
@@ -47,16 +50,23 @@ public class World {
 		float maxForce = 2.0f;
 		float maxTurnRate = 0.05f;
 		float maxSpeed = 0.1f;
+		float playerSightRange = 7.0f;
 		
 		player = new Character(new Vector3(6, 0, 1), new Vector3(0.5f, 1.0f, 0.5f), new Vector3(0, 0, 0), 
-				mass, maxForce, maxTurnRate, maxSpeed, 3.0f);
+				mass, maxForce, maxTurnRate, maxSpeed, playerSightRange);
 		player.setCamForwardVector(camDirection);
+		player.world = this;
 		
+		float zombieSightRange = 5.0f;
 		zombies = new Array<Zombie>();
-		zombies.add(newZombie(new Vector3(1f, 0, 1.1f), new Vector3(0.5f, 1, 0.5f), new Vector3(0, 0, 0), 0.5f, 10f) );
-		zombies.add(newZombie(new Vector3(2.5f, 0, 1), new Vector3(0.5f, 1, 0.5f), new Vector3(0, 0, 0), 0.5f, 10f) );
-		zombies.add(newZombie(new Vector3(3.5f, 0, 1.5f), new Vector3(0.5f, 1, 0.5f), new Vector3(0, 0, 0), 0.5f, 10f) );
-		zombies.add(newZombie(new Vector3(4.5f, 0, 2), new Vector3(0.5f, 1, 0.5f), new Vector3(0, 0, 0), 0.5f, 10f) );
+		zombies.add(newZombie(new Vector3(1f, 0, 1.1f), new Vector3(0.5f, 1, 0.5f), 
+				new Vector3(0, 0, 0), 0.5f, zombieSightRange) );
+		zombies.add(newZombie(new Vector3(2.5f, 0, 1), new Vector3(0.5f, 1, 0.5f), 
+				new Vector3(0, 0, 0), 0.5f, zombieSightRange) );
+		zombies.add(newZombie(new Vector3(3.5f, 0, 1.5f), new Vector3(0.5f, 1, 0.5f), 
+				new Vector3(0, 0, 0), 0.5f, zombieSightRange) );
+		zombies.add(newZombie(new Vector3(4.5f, 0, 2), new Vector3(0.5f, 1, 0.5f), 
+				new Vector3(0, 0, 0), 0.5f, zombieSightRange) );
 		
 		MessageDispatcher.initialize();
 	}
@@ -97,6 +107,13 @@ public class World {
 		
 		int nodeX = (int) (player.getPosition().x / WORLD_UNIT_WIDTH);
 		int nodeZ = (int) (player.getPosition().z / WORLD_UNIT_DEPTH);
+		
+		// Don't set a node if it is negative, as it will cause the path finder
+		// to crash
+		if (nodeX < 0 || nodeZ < 0) {
+			return;
+		}
+		
 		player.setCurrentNode(nodeX, nodeZ);
 		
 		for (Zombie zombie: zombies) {
@@ -105,6 +122,11 @@ public class World {
 			// Every half unit is a node
 			nodeX = (int) (zomPos.x / WORLD_UNIT_WIDTH);
 			nodeZ = (int) (zomPos.z / WORLD_UNIT_DEPTH);
+			
+			// Don't set a node if it is negative, as it will cause the path finder to crash
+			if (nodeX < 0 || nodeZ < 0) {
+				return;
+			}
 
 			pathFinder.setNodeType(NodeType.UNWALKABLE, nodeX, nodeZ);
 			zombie.setCurrentNode(nodeX, nodeZ);
@@ -115,19 +137,31 @@ public class World {
 	}
 	
 	/**
-	 * The player will seek target and attack it
+	 * The player will seek the nearest zombie and attack it
 	 */
 	void playerSeekTarget() {
-		// Don't search for a target if there is already
-		if (player.getTargetId() != -1) {
-			return;
+		float dist2 = Float.MAX_VALUE;
+		Zombie nearestZom = null;
+		for (Zombie zombie: zombies) {
+			tmpVec.set(player.getBoundingBox().getCenter()).y = 0; // No elevation
+			tmpVec2.set(zombie.getBoundingBox().getCenter()).y = 0;
+			
+			float tmpDist2 = Vector3.dst2(tmpVec.x, tmpVec.y, tmpVec.z, tmpVec2.x, tmpVec2.y, tmpVec2.z);
+			// If the distance is in range
+			if (tmpDist2 < player.getSightRange() * player.getSightRange()) {
+				
+				// If the distance is lower than the saved nearest distance
+				if (tmpDist2 < dist2) {
+					dist2 = tmpDist2;
+					nearestZom = zombie;
+				}
+			}
+			
 		}
 		
-		for (Zombie zombie: zombies) {
-			if (player.isInRange(zombie.getBoundingBox().getCenter(), player.getSightRange())) {
-				MessageDispatcher.sendMessage(zombie.getId(), player.getId(), 0, 
-						MessageType.IS_IN_RANGE, zombie.getBoundingBox());
-			}
+		if (nearestZom != null) {
+			MessageDispatcher.sendMessage(nearestZom.getId(), player.getId(), 0, 
+					MessageType.IS_IN_RANGE, nearestZom.getBoundingBox());
 		}
 	}
 	
