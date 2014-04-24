@@ -21,6 +21,7 @@ public class IdleState implements BaseState<Character> {
 
 	@Override
 	public void update(Character entity, float delta) {
+		// If the target id is not valid, it will never attack
 		Character targetChar = (Character) EntityManager.getEntity(entity.getTargetId());
 		
 		if (targetChar == null) {

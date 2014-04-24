@@ -194,7 +194,7 @@ public class WorldRenderer {
 		camHandler.update(world.player.getBoundingBox().getCenter(), world.getCamDirection(), delta);
 //		camHandler.update(world.zombies.get(0).getBoundingBox().getCenter(), world.getCamDirection(), delta);
 		
-		debug();
+//		debug();
 	}
 	
 	

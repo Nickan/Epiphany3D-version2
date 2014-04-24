@@ -339,7 +339,8 @@ public class SteeringBehavior {
 	
 	public void setTargetChar(Character targetChar) { 
 		this.targetChar = targetChar;
-		setTargetPos(targetChar.getBoundingBox().getCenter());
+		if (targetChar != null)
+			setTargetPos(targetChar.getBoundingBox().getCenter());
 	}
 	public Character getTargetChar() { return targetChar; }
 	

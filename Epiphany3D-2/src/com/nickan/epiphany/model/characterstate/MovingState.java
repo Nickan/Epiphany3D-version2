@@ -71,6 +71,7 @@ public class MovingState implements BaseState<Character> {
 			} else {
 				entity.steeringBehavior.seekOn();
 				entity.steeringBehavior.avoidanceOn();
+				entity.setTargetId(-1);
 				entity.setCurrentAction(Action.RUNNING);
 			}
 			return true;
