@@ -100,6 +100,8 @@ public class GameScreen implements Screen {
 	@Override
 	public void dispose() {
 		worldRenderer.dispose();
+		allButtons.dispose();
+		hud.dispose();
 	}
 
 }

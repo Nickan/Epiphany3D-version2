@@ -538,6 +538,7 @@ public class AllGameButtonsView {
 	
 	public void dispose() {
 		skin.dispose();
+		stage.dispose();
 	}
 	
 }

@@ -252,6 +252,7 @@ public class WorldRenderer {
 	public void dispose() {
 		assetManager.dispose();
 		modelBatch.dispose();
+		sRenderer.dispose();
 	}
 	
 	private void drawCorners(Vector3[] corners) {
