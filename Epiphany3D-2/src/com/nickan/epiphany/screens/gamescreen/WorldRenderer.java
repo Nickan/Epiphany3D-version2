@@ -40,7 +40,7 @@ public class WorldRenderer {
 	private Array<ModelInstance> zombies;
 	
 	// For fixing problem light
-//	private DirectionalLight dirLight;
+	private DirectionalLight dirLight;
 	
 	/** Array of ModelInstances that have same Environment effect on them, else don't add it here */
 	private Array<ModelInstance> worldModelInstances;
@@ -50,9 +50,11 @@ public class WorldRenderer {
 	
 	PerspectiveCameraHandler camHandler;
 	
+	ModelInstanceManager modelManager;
 	
 	// For debugging
 	private ShapeRenderer sRenderer = new ShapeRenderer();
+	private boolean debugging = false;
 	
 	public WorldRenderer(World world) {
 		this.world = world;
@@ -69,8 +71,7 @@ public class WorldRenderer {
 		environment = new Environment();
 		
 		// For fixing...
-//		dirLight = new DirectionalLight().set(1.0f, 10.0f, 1.0f, 0, -1.0f, 0);
-//		environment.add(dirLight);
+		dirLight = new DirectionalLight().set(1.0f, 10.0f, 1.0f, 0, -1.0f, 0);
 		environment.add(pointLight);
 		
 		// Setting up the camera
@@ -84,6 +85,8 @@ public class WorldRenderer {
 		camHandler = new PerspectiveCameraHandler(perspectiveCam);
 		
 		modelBatch = new ModelBatch();
+		
+		modelManager = new ModelInstanceManager();
 		
 		loadingResources = true;
 	}
@@ -174,6 +177,12 @@ public class WorldRenderer {
 		// Set the position of the point light just about above the players position
 		pointLight.position.set(world.player.getBoundingBox().getCenter()).y = 1.5f;
 		
+		/*
+		 *  Manages the model instances to be rendered, set the position of the player as the
+		 *  basis of the model instances to be drawn
+		 */
+		modelManager.update(worldModelInstances, world.player.getBoundingBox().getCenter());
+		
 		// Update the AnimationHandlers
 		for (AnimationHandler handler: aniHandlers) {
 			handler.update(delta);
@@ -194,7 +203,9 @@ public class WorldRenderer {
 		camHandler.update(world.player.getBoundingBox().getCenter(), world.getCamDirection(), delta);
 //		camHandler.update(world.zombies.get(0).getBoundingBox().getCenter(), world.getCamDirection(), delta);
 		
-//		debug();
+		if (debugging) {
+			debug();
+		}
 	}
 	
 	
@@ -253,6 +264,19 @@ public class WorldRenderer {
 		assetManager.dispose();
 		modelBatch.dispose();
 		sRenderer.dispose();
+	}
+	
+	public boolean isDebugging() { return debugging; }
+	
+	public void setDebugging(boolean debugging) {
+		this.debugging = debugging;
+		if (debugging) {
+			environment.add(dirLight);
+			environment.add(pointLight);
+		} else {
+			environment.clear();
+			environment.add(pointLight);
+		}
 	}
 	
 	private void drawCorners(Vector3[] corners) {

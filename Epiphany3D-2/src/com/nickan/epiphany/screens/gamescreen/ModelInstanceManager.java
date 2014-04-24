@@ -31,7 +31,7 @@ public class ModelInstanceManager {
 			instance.transform.getTranslation(tempPos);
 
 			// If the ModelInstance is far away from the set drawDistance
-			if (position.dst2(tempPos) > drawDistance * drawDistance) {
+			if (basePosition.dst2(tempPos) > drawDistance * drawDistance) {
 				idleInstances.add(instance);
 				instances.removeValue(instance, true);
 				continue;
@@ -41,7 +41,7 @@ public class ModelInstanceManager {
 		for (ModelInstance instance: idleInstances) {
 			instance.transform.getTranslation(tempPos);
 			// If the ModelInstance is near the drawDistance
-			if (position.dst2(tempPos) < drawDistance * drawDistance) {
+			if (basePosition.dst2(tempPos) < drawDistance * drawDistance) {
 				instances.add(instance);
 				idleInstances.removeValue(instance, true);
 				continue;

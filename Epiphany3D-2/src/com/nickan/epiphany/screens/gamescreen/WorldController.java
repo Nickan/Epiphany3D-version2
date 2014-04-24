@@ -37,6 +37,7 @@ public class WorldController implements InputProcessor {
 		case Keys.A: 
 			break;
 		case Keys.D: 
+			worldRenderer.setDebugging(!worldRenderer.isDebugging());
 			break;
 		}
 		
