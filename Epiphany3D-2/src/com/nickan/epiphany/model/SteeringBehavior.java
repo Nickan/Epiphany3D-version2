@@ -51,6 +51,8 @@ public class SteeringBehavior {
 	
 	Array<Node> pathList = new Array<Node>();
 	
+	private boolean invertSteeringX = false;
+	
 	public SteeringBehavior(Character character) {
 		this.character = character;
 		steeringForce = new Vector3();
@@ -187,6 +189,7 @@ public class SteeringBehavior {
 		return tmpVec1.dot(tmpVec2);
 	}
 	
+	// FIXME make it more readable
 	private Vector3 obstacleAvoidance(Array<Zombie> zombies) {
 		Zombie nearestZom = getNearestZombie(zombies);
 
@@ -197,56 +200,70 @@ public class SteeringBehavior {
 			
 			// Should analyze the center of the bounds, not the position of the entity
 			OrientedBoundingBox charBound = character.getBoundingBox();
-			Matrix4 charInvTransform = charBound.getInverseTransform();
-			Vector3 localNearestZomTransform = new Vector3(nearestZom.getBoundingBox().getCenter());
-			localNearestZomTransform.mul(charInvTransform);
+			OrientedBoundingBox zomBound = nearestZom.getBoundingBox();
 			
-			//...
-//			System.out.println("Local zombie transform: " + localNearestZomTransform);
+			// Set up the position of the nearest zombie translated to the local space of the character
+			tmpVec1.set(nearestZom.getBoundingBox().getCenter());
+			tmpVec1.mul(charBound.getInverseTransform());
 			
-			//...
-//			System.out.println("Local transform: " + localNearestZomTransform);
-			float multiplier = charBound.getDimension().z - Math.abs(localNearestZomTransform.x) * 
-					charBound.getDimension().z;
+			OrientedBoundingBox detectorBound = character.getBoxDetector();
+			steeringForce.x = getLocalSteeringForceX(detectorBound.getDimension().z, tmpVec1, zomBound.getDimension());
+			steeringForce.z = getLocalSteeringForceZ(zomBound.getDimension(), tmpVec1);
 			
-			Vector3 zomDim = nearestZom.getBoundingBox().getDimension();
-			float zomRadius = new Vector2(zomDim.x, zomDim.z).len();
-			steeringForce.x = (zomRadius - Math.abs(localNearestZomTransform.x)) * multiplier;
-			
-			// To correct the polarity for applying the steering force about x-axis
-			if (localNearestZomTransform.x > 0) {
-				steeringForce.x *= -1;
-			}
-			
-			//...
-//			System.out.println("Radius: " + zomRadius);
-//			System.out.println("Multiplier x: " + multiplier);
-			
-			
-			float breakingForce = 0.1f;
-			steeringForce.z = (zomRadius - Math.abs(localNearestZomTransform.z)) * 
-					breakingForce;
-//			System.out.println("steeringForce: " + steeringForce);
-			
-			// Add the force based on the character's position
-//			steeringForce.add(character.getPosition());
-//			steeringForce.y = 0;	// Remove the movement about y-axis for now
-			
-			Matrix4 toWorld = new Matrix4(character.getBoundingBox().transform);
-			steeringForce.mul(toWorld);
-			steeringForce.y = 0;	// Remove the movement about y-axis for now
-			steeringForce.sub(character.getPosition());
-			
-			//...
-//			System.out.println("Final steeringForce: " + steeringForce);
-//			System.out.println("");
+			// Translate the steering force to world
+			steeringForce.mul(charBound.transform);
+			steeringForce.sub(charBound.getCenter());	// Set up the direction only
 			
 			hasDetectedObstacle = true;
-			
-			//...
-//			System.out.println("Obstacle detected");
 		}
 		return steeringForce;
+	}
+	
+	/**
+	 * To be used solely for obstacle avoidance
+	 * @param charDim
+	 * @param nearestZomLocalPos
+	 * @param nearestZomDim
+	 * @return
+	 */
+	private float getLocalSteeringForceX(float detectorLength, Vector3 nearestZomLocalPos, Vector3 nearestZomDim) {
+		// The longer the size of the , the greater the multiplier
+		float multiplier = detectorLength - Math.abs(nearestZomLocalPos.x) * detectorLength;
+
+		float zomRadius = getZombieRadius(nearestZomDim);
+		float steeringForceX = (zomRadius - Math.abs(nearestZomLocalPos.x)) * multiplier;
+		
+		// To correct the polarity for applying the steering force about x-axis
+		if (nearestZomLocalPos.x > 0) {
+			steeringForceX *= -1;
+		}
+		
+		if (invertSteeringX) {
+			steeringForceX *= -1;
+		}
+		return steeringForceX;
+	}
+	
+	public void setInvertSteeringX(boolean invertSteeringX) { this.invertSteeringX = invertSteeringX; }
+	public boolean isInvertSteeringX() { return invertSteeringX; }
+	
+	/**
+	 * To be used solely for obstacle avoidance
+	 * @param nearestZomDim
+	 * @param nearestZomLocalPos
+	 * @return
+	 */
+	private float getLocalSteeringForceZ(Vector3 nearestZomDim, Vector3 nearestZomLocalPos) {
+		float breakingForce = 0.1f;
+		
+		float steeringForceZ = (getZombieRadius(nearestZomDim) - Math.abs(nearestZomLocalPos.z)) * 
+				breakingForce;
+		return steeringForceZ;
+	}
+	
+	private float getZombieRadius(Vector3 nearestZomDim) {
+		float zomRadius = new Vector2(nearestZomDim.x, nearestZomDim.z).len();
+		return zomRadius;
 	}
 	
 	private Zombie getNearestZombie(Array<Zombie> zombies) {
