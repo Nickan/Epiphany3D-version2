@@ -75,6 +75,7 @@ public class Character extends MoveableEntity {
 		
 		// Update the position
 		position.add(velocity);
+		limitMovementInsideWorld();
 		
 		// Needs to have a copy of the velocity, as nor() changes the value of vector
 		// which defeats the purpose of the setting up the velocity
@@ -89,9 +90,31 @@ public class Character extends MoveableEntity {
 		super.update(delta);
 	}
 	
-	public int getLife() {
-		return 0;
+	/**
+	 * Limits the position of the character inside the world
+	 */
+	private void limitMovementInsideWorld() {
+		steeringBehavior.setInvertSteeringX(false);	// Reset the inversion of the steering force x
+		
+		// Movement about x-axis
+		if (position.x < obb.getDimension().x) {
+			position.x = obb.getDimension().x;
+			
+			// Invert the steering force about x-axis in local space
+			steeringBehavior.setInvertSteeringX(true);
+		}
+		
+		// Movement about z-axis
+		if (position.z < obb.getDimension().z) {
+			position.z = obb.getDimension().z;
+			
+			// Invert the steering force about x-axis in local space
+			steeringBehavior.setInvertSteeringX(true);
+		}
 	}
+	
+	
+	public int getLife() { return 0; }
 	
 	public void setTargetId(int targetId) { this.targetId = targetId; }
 	public int getTargetId() { return targetId; }
@@ -117,8 +140,6 @@ public class Character extends MoveableEntity {
 	public SteeringBehavior getSteeringBehavior() { return steeringBehavior; }
 	
 	@Override
-	public boolean handleMessage(Message message) {
-		return charStateMachine.handleMessage(message);
-	}
+	public boolean handleMessage(Message message) { return charStateMachine.handleMessage(message); }
 
 }
