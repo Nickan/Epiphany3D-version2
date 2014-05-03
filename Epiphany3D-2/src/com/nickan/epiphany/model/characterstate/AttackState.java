@@ -12,15 +12,14 @@ import com.nickan.epiphany.model.SteeringBehavior;
 public class AttackState implements BaseState<Character> {
 	private static final AttackState instance = new AttackState();
 	private static final Vector3 tmpVec = new Vector3();
-	private static final Vector3 tmpVec2 = new Vector3();
 
 	@Override
 	public void start(Character entity) {
-	//	MessageDispatcher.sendMessage(entity.getId(), entity.getTargetId(), 0, MessageType.ATTACK, null);
-		
-		SteeringBehavior behavior = entity.getSteeringBehavior();
 		Character targetChar = (Character) EntityManager.getEntity(entity.getTargetId());
+		
+		// See if the targetChar exists
 		if (targetChar != null) {
+			SteeringBehavior behavior = entity.getSteeringBehavior();
 			behavior.setTargetPos(targetChar.getBoundingBox().getCenter());
 			behavior.seekOn();
 			behavior.avoidanceOn();
@@ -31,33 +30,44 @@ public class AttackState implements BaseState<Character> {
 
 	@Override
 	public void update(Character entity, float delta) {
+		// Get the target character
 		Character targetChar = (Character) EntityManager.getEntity(entity.getTargetId());
+		
+		// See if the target is really existing (might be already killed or something)
 		if (targetChar != null) {
-			SteeringBehavior behavior = entity.getSteeringBehavior();
 			
-			entity.steeringBehavior.setTargetChar(targetChar);
 			if (isAttacking(entity, targetChar)) {
-				updateAttack(entity, delta);
-				behavior.resetBehavior();
-				
-				// Face the target
-				tmpVec.set(targetChar.getPosition()).sub(entity.getPosition());
-				entity.setHeading(tmpVec.nor());
+				attackingTarget(entity, targetChar, delta);
 			} else {
-				
-				Vector3 tarPos = targetChar.getBoundingBox().getCenter();
-				
-				if (entity.isInRange(tarPos, entity.getSightRange())) {
-					behavior.setTargetPos(tarPos);
-					behavior.seekOn();
-					behavior.avoidanceOn();
-					entity.setCurrentAction(Action.RUNNING);
-				} else {
-					entity.charChangeState(IdleState.getInstance());
-				}
+				// Not attacking
+				trackingTarget(entity, targetChar);
 			}
 		}
 		
+	}
+	
+	private void attackingTarget(Character entity, Character targetChar, float delta) {
+		updateAttack(entity, delta);
+		
+		entity.getSteeringBehavior().resetBehavior();	// There should be no steering behavior when already attacking
+		
+		// Face the target
+		tmpVec.set(targetChar.getPosition()).sub(entity.getPosition());
+		entity.setHeading(tmpVec.nor());
+	}
+	
+	private void trackingTarget(Character entity, Character targetChar) {
+		Vector3 tarCenterPos = targetChar.getBoundingBox().getCenter();
+		
+		if (entity.isInRange(tarCenterPos, entity.getSightRange())) {
+			SteeringBehavior behavior = entity.getSteeringBehavior();
+			behavior.setTargetPos(tarCenterPos);
+			behavior.seekOn();
+			behavior.avoidanceOn();
+			entity.setCurrentAction(Action.RUNNING);
+		} else {
+			entity.charChangeState(IdleState.getInstance());
+		}
 	}
 	
 	private void updateAttack(Character entity, float delta) {
@@ -79,9 +89,9 @@ public class AttackState implements BaseState<Character> {
 	/**
 	 * @param entity
 	 * @param tarChar
-	 * @return - If the entity is attacking, for now just use the range, it should be changed
-	 * 				like if already attacking then the target gets out of range, it should continue
-	 * 				finishing its attack, before seeking the target again.
+	 * @return	If the entity is attacking, for now just use the range, it should be changed
+	 * 			like if already attacking then the target gets out of range, it should continue
+	 * 			finishing its attack, before seeking the target again.
 	 */
 	private boolean isAttacking(Character entity, Character targetChar) {
 		boolean useSphereDetection = true; // If whether to use sphere or OBB for collision
@@ -89,22 +99,20 @@ public class AttackState implements BaseState<Character> {
 		if (useSphereDetection) {
 			OrientedBoundingBox entBox = entity.getBoundingBox();
 			OrientedBoundingBox tarBox = targetChar.getBoundingBox();
-			// No elevation
-			tmpVec.set(entBox.getCenter()).y = 0;
-			tmpVec2.set(tarBox.getCenter()).y = 0;
-			float dist = tmpVec.dst2(tmpVec2);
 			
-			// For now, use the x-axis to dictate the radius of the entity
+			tmpVec.set(tarBox.getCenter());
+			
+			// For now, use the width to dictate the radius of the entity
 			float entityRadius = entBox.getDimension().x / 2;
 			float targetRadius = tarBox.getDimension().x / 2;
 			float range = entityRadius + targetRadius;
 			
-			return (dist < range * range);
+			return entity.isInRange(tmpVec, range);
 		}
 		
 		/*
-		 *  The problem with this OBB detection is that the radius of the center varies when
-		 *  it rotates, so the radius varies which have undesired result
+		 *  The problem with this OBB detection is that the radius of the OBB varies when
+		 *  it rotates, which have undesired result
 		 */
 		return OrientedBoundingBox.collides(entity.getBoundingBox(), targetChar.getBoundingBox());
 	}
