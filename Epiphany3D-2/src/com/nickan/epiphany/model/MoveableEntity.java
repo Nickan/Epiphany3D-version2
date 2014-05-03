@@ -67,17 +67,15 @@ public abstract class MoveableEntity extends Entity {
 	}
 	
 	/**
-	 * Automatically set the elevation to zero, just for now, should give the center of the
-	 * entity to have the desirable result
 	 * @param targetPos
 	 * @param range
-	 * @return
+	 * @return - If the target position is in range based on the passed range
 	 */
 	public boolean isInRange(Vector3 targetPos, float range) {
 		// Get the origin of the target
 		// No elevation for now
-		tempVec1.set(targetPos).y = 0;
-		tempVec2.set(this.obb.getCenter()).y = 0; 
+		tempVec1.set(targetPos);
+		tempVec2.set(this.obb.getCenter()); 
 		tempVec1.sub(tempVec2);
 		
 		return (tempVec1.len2() <= range * range);
