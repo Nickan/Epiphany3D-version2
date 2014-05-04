@@ -32,14 +32,17 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		SpriteBatch batch = (SpriteBatch) allButtons.stage.getSpriteBatch();
+		
 		switch (world.currentState) {
 		case GAME:
 			world.update(delta);
 			worldRenderer.render(delta);
 			allButtons.render(delta);
+			hud.drawGameHud(batch);
 			break;
 		case PAUSE:
-			SpriteBatch batch = (SpriteBatch) allButtons.stage.getSpriteBatch();
+			worldRenderer.render(0);
 			hud.drawPauseBackground(batch);
 			allButtons.render(delta);
 			hud.drawPauseHud(batch, world.player);
@@ -47,7 +50,6 @@ public class GameScreen implements Screen {
 		default:
 			break;
 		}
-
 		
 	}
 

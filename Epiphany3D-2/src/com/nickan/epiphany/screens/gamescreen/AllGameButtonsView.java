@@ -11,6 +11,9 @@ import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.Message.
 import com.nickan.epiphany.framework.finitestatemachine.messagingsystem.MessageDispatcher;
 import com.nickan.epiphany.model.characterstate.MovingState.Movement;
 import com.nickan.epiphany.model.inventory.Inventory;
+import com.nickan.epiphany.model.inventory.Item;
+import com.nickan.epiphany.screens.gamescreen.HeadsUpDisplay.PauseWindow;
+import com.nickan.epiphany.screens.gamescreen.HeadsUpDisplay.SubScreenMode;
 import com.nickan.epiphany.screens.gamescreen.World.State;
 
 /**
@@ -46,15 +49,22 @@ public class AllGameButtonsView {
 	private TextureAtlas atlas;
 	
 	private static final int INVENTORY_COLUMNS = 4;
-	private static final int INVENTORY_ROWS = 8;
+	private static final int INVENTORY_ROWS = 4;
 	
-	// Needs to be a field, as needed for button detection
+	// Needs to be a field, as needed for registering listener for buttons
 	float inventoryX;
 	float inventoryY;
 	float inventoryButtonWidth;
 	float inventoryButtonHeight;
 
 	Button[][] inventoryButtons = new Button[INVENTORY_COLUMNS][INVENTORY_ROWS];
+	
+	Button showStatus;
+	Button showItems;
+	
+	Button use;
+	Button cancel;
+	Button discard;
 	
 	public AllGameButtonsView(World world, GameScreen screen) {
 		this.world = world;
@@ -80,24 +90,48 @@ public class AllGameButtonsView {
 		initializeMovementButtons(unitX, unitY);
 		initializeSkillsAndAttackButtons(unitX, unitY);
 		initializePauseButton(unitX, unitY);
+		
 		initializeResumeButton(unitX, unitY);
 		initializeInventoryButtons(unitX, unitY);
 		initializeEquipmentButtons(unitX, unitY);
 		
-		switch (world.currentState) {
-		case GAME:
-			addMovementButtons();
-			addSkillsAndAttackButtons();
-			stage.addActor(pause);
-			screen.setGameController();
-			break;
-		case PAUSE:
-			addInventoryButtons();
-			addEquipmentButtons();
-			stage.addActor(resume);
-			screen.setPauseController();
-			break;
-		}
+		initializePauseSelection(unitX, unitY);
+		
+		initializeItemOptionButtons(unitX, unitY);
+		
+		setGameButtons();
+	}
+	
+	private void setGameButtons() {
+		world.currentState = State.GAME;
+		world.stopCameraRotation = false;
+		
+		screen.setGameController();
+		
+		stage.addActor(pause);
+		addMovementButtons();
+		addSkillsAndAttackButtons();
+		
+		resume.remove();
+		showStatus.remove();
+		showItems.remove();
+		removeInventoryButtons();
+		removeEquipmentButtons();
+	}
+	
+	private void setPauseButtons() {
+		world.currentState = State.PAUSE;
+		world.stopCameraRotation = false;
+		
+		screen.setPauseController();
+		
+		stage.addActor(resume);
+		stage.addActor(showStatus);
+		stage.addActor(showItems);
+		
+		pause.remove();
+		removeMovementButtons();
+		removeSkillsAndAttackButtons();
 	}
 	
 	public void show() {
@@ -240,25 +274,17 @@ public class AllGameButtonsView {
 	
 	private void initializePauseButton(float unitX, float unitY) {
 		pause = new Button(skin.getDrawable("pausenormal"), skin.getDrawable("pausepressed"));
-		pause.setPosition(0, unitY * 9);
+		pause.setPosition(0, unitY * 15);
 		pause.setSize(unitX * 1.5f, unitY * 1.5f);
 		
 		pause.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				setPauseButtons();
 				return true;
 			}
 			
 			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				world.currentState = State.PAUSE;
-				world.stopCameraRotation = false;
-				removeMovementButtons();
-				removeSkillsAndAttackButtons();
-				pause.remove();
-				stage.addActor(resume);
-				screen.setPauseController();
-				addInventoryButtons();
-				addEquipmentButtons();
+				
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -269,25 +295,17 @@ public class AllGameButtonsView {
 	
 	private void initializeResumeButton(float unitX, float unitY) {
 		resume = new Button(skin.getDrawable("resumenormal"), skin.getDrawable("resumepressed"));
-		resume.setPosition(0, unitY * 9);
+		resume.setPosition(0, unitY * 15);
 		resume.setSize(unitX * 1.5f, unitY * 1.5f);
 		
 		resume.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				
+				setGameButtons();
 				return true;
 			}
 			
 			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				world.currentState = State.GAME;
-				world.stopCameraRotation = false;
-				addMovementButtons();
-				addSkillsAndAttackButtons();
-				resume.remove();
-				stage.addActor(pause);
-				screen.setGameController();
-				removeInventoryButtons();
-				removeEquipmentButtons();
+				
 			}
 			
 			public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -297,10 +315,11 @@ public class AllGameButtonsView {
 	}
 	
 	private void initializeInventoryButtons(float unitX, float unitY) {
-		inventoryButtonWidth = unitX * 1.78f;
-		inventoryButtonHeight = unitY * 2.1f;
-		inventoryX = unitX * 9.2f;
-		inventoryY = unitY * 0.5f;
+		inventoryButtonWidth = unitX * 2.2f;
+		inventoryButtonHeight = unitY * 2.2f;
+		inventoryX = unitX * 12.5f;
+		inventoryY = unitY * 4.2f;
+		
 		// Setting up the inventory buttons
 		for (int col = 0; col < INVENTORY_COLUMNS; ++col) {
 			for (int row = 0; row < INVENTORY_ROWS; ++row) {
@@ -324,7 +343,7 @@ public class AllGameButtonsView {
 						int row = (int) (startY / inventoryButtonHeight);
 						
 						Inventory inventory = world.player.inventory;
-						inventory.use(row, col);
+						showInventoryItemDesc(inventory.getItems()[row][col]);
 						return true;
 					}
 
@@ -343,29 +362,35 @@ public class AllGameButtonsView {
 	}
 	
 	private void initializeEquipmentButtons(float unitX, float unitY) {
+		float equipmentWidth = unitX * 2.2f;
+		float equipmentHeight = unitY * 2.2f;
+		
+		float posX = unitX * 5f;
+		float posY = unitY * 10.5f;
+		
 		head = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		head.setPosition(unitX * 12.0f, unitY * 15f);
-		head.setSize(unitX * 1.5f, unitY * 1.5f);
+		head.setPosition(posX + (equipmentWidth * 0), posY + (equipmentHeight * 0));
+		head.setSize(equipmentWidth, equipmentHeight);
 		
 		leftHand = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		leftHand.setPosition(unitX * 10f, unitY * 13f);
-		leftHand.setSize(unitX * 1.5f, unitY * 1.5f);
+		leftHand.setPosition(posX + (equipmentWidth * 0), posY + (equipmentHeight * -1.5f));
+		leftHand.setSize(equipmentWidth, equipmentHeight);
 		
 		rightHand = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		rightHand.setPosition(unitX * 14.0f, unitY * 13.0f);
-		rightHand.setSize(unitX * 1.5f, unitY * 1.5f);
+		rightHand.setPosition(posX + (equipmentWidth * -1.5f), posY + (equipmentHeight * -1.5f));
+		rightHand.setSize(equipmentWidth, equipmentHeight);
 		
 		body = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		body.setPosition(unitX * 12.0f, unitY * 13.0f);
-		body.setSize(unitX * 1.5f, unitY * 1.5f);
+		body.setPosition(posX + (equipmentWidth * 1.5f), posY + (equipmentHeight * -1.5f));
+		body.setSize(equipmentWidth, equipmentHeight);
 		
 		gloves = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		gloves.setPosition(unitX * 13.0f, unitY * 11.0f);
-		gloves.setSize(unitX * 1.5f, unitY * 1.5f);
+		gloves.setPosition(posX + (equipmentWidth * -0.75f), posY + (equipmentHeight * -3f));
+		gloves.setSize(equipmentWidth, equipmentHeight);
 		
 		boots = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
-		boots.setPosition(unitX * 11.0f, unitY * 11.0f);
-		boots.setSize(unitX * 1.5f, unitY * 1.5f);
+		boots.setPosition(posX + (equipmentWidth * 0.75f), posY + (equipmentHeight * -3f));
+		boots.setSize(equipmentWidth, equipmentHeight);
 		
 		head.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
@@ -376,13 +401,8 @@ public class AllGameButtonsView {
 				return true;
 			}
 			
-			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				
-			}
-			
-			public void touchDragged(InputEvent event, float x, float y, int pointer) {
-				
-			}
+			public void touchUp(InputEvent event, float x, float y, int button, int pointer) { }	
+			public void touchDragged(InputEvent event, float x, float y, int pointer) { }
 		});
 		
 		leftHand.addListener(new InputListener() {
@@ -392,14 +412,6 @@ public class AllGameButtonsView {
 					inventory.removeEquippedItem(inventory.getLeftHand());
 				}
 				return true;
-			}
-			
-			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				
-			}
-			
-			public void touchDragged(InputEvent event, float x, float y, int pointer) {
-				
 			}
 		});
 		
@@ -411,14 +423,6 @@ public class AllGameButtonsView {
 				}
 				return true;
 			}
-			
-			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				
-			}
-			
-			public void touchDragged(InputEvent event, float x, float y, int pointer) {
-				
-			}
 		});
 		
 		body.addListener(new InputListener() {
@@ -428,14 +432,6 @@ public class AllGameButtonsView {
 					inventory.removeEquippedItem(inventory.getArmor());
 				}
 				return true;
-			}
-			
-			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
-				
-			}
-			
-			public void touchDragged(InputEvent event, float x, float y, int pointer) {
-				
 			}
 		});
 		
@@ -447,6 +443,41 @@ public class AllGameButtonsView {
 				}
 				return true;
 			}
+		});
+		
+		boots.addListener(new InputListener() {
+			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
+				Inventory inventory = world.player.inventory;
+				if (inventory.getBoots() != null) {
+					inventory.removeEquippedItem(inventory.getBoots());
+				}
+				return true;
+			}
+		});
+	}
+	
+	/**
+	 * Initialize the selection buttons showing the equipment, attributes, etc. One selection at a time
+	 * @param unitX
+	 * @param unitY
+	 */
+	private void initializePauseSelection(float unitX, float unitY) {
+		float buttonWidth = unitX * 1.5f;
+		float buttonHeight = unitX * 1.5f;
+		
+		showStatus = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
+		showStatus.setPosition(unitX * 3f, unitY * 15);
+		showStatus.setSize(buttonWidth, buttonHeight);
+		
+		showItems = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
+		showItems.setPosition(unitX * 6f, unitY * 15);
+		showItems.setSize(buttonWidth, buttonHeight);
+		
+		showStatus.addListener(new InputListener() {
+			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
+				setShowStatus();
+				return true;
+			}
 			
 			public void touchUp(InputEvent event, float x, float y, int button, int pointer) {
 				
@@ -457,12 +488,9 @@ public class AllGameButtonsView {
 			}
 		});
 		
-		boots.addListener(new InputListener() {
+		showItems.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int button, int pointer) {
-				Inventory inventory = world.player.inventory;
-				if (inventory.getBoots() != null) {
-					inventory.removeEquippedItem(inventory.getBoots());
-				}
+				setShowItems();
 				return true;
 			}
 			
@@ -476,6 +504,51 @@ public class AllGameButtonsView {
 		});
 	}
 	
+	private void initializeItemOptionButtons(float unitX, float unitY) {
+		float buttonSizeX = unitX * 2f;
+		float buttonSizeY = unitX * 0.75f;
+		use = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
+		use.setSize(buttonSizeX, buttonSizeY);
+		use.setPosition(unitX * 2, unitY * 1.5f);
+		
+		cancel = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
+		cancel.setSize(buttonSizeX, buttonSizeY);
+		cancel.setPosition(unitX * 5, unitY * 1.5f);
+		
+		discard = new Button(skin.getDrawable("equipmentslotnormal"), skin.getDrawable("equipmentslotpressed"));
+		discard.setSize(buttonSizeX, buttonSizeY);
+		discard.setPosition(unitX * 8, unitY * 1.5f);
+	}
+	
+	
+	private void showInventoryItemDesc(Item item) {
+		screen.hud.itemToShowDesc = item;
+		screen.hud.setSubScreen1(SubScreenMode.SHOW_ITEM_DESC);
+		
+		addItemOptionButtons();
+		removeEquipmentButtons();
+	}
+
+	private void setShowStatus() {
+		removeInventoryButtons();
+		removeEquipmentButtons();
+		removeItemOptionButtons();
+		
+		screen.hud.setPauseWindow(PauseWindow.SHOW_STATUS);
+		screen.hud.setSubScreen1(SubScreenMode.NONE);
+		screen.hud.setSubScreen2(SubScreenMode.NONE);
+	}
+	
+	private void setShowItems() {
+		addInventoryButtons();
+		addEquipmentButtons();
+		
+		removeItemOptionButtons();
+		
+		screen.hud.setPauseWindow(PauseWindow.SHOW_ITEMS);
+		screen.hud.setSubScreen1(SubScreenMode.NONE);
+		screen.hud.setSubScreen2(SubScreenMode.NONE);
+	}
 	
 	private void addMovementButtons() {
 		stage.addActor(forward);
@@ -506,6 +579,12 @@ public class AllGameButtonsView {
 		stage.addActor(boots);
 	}
 	
+	private void addItemOptionButtons() {
+		stage.addActor(use);
+		stage.addActor(cancel);
+		stage.addActor(discard);
+	}
+	
 	
 	private void removeMovementButtons() {
 		forward.remove();
@@ -534,6 +613,12 @@ public class AllGameButtonsView {
 		body.remove();
 		gloves.remove();
 		boots.remove();
+	}
+	
+	private void removeItemOptionButtons() {
+		use.remove();
+		cancel.remove();
+		discard.remove();
 	}
 	
 	public void dispose() {
