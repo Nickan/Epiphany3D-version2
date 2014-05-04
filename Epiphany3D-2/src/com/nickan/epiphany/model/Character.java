@@ -21,7 +21,7 @@ public class Character extends MoveableEntity {
 	public World world;
 	
 	// Can safely be declared as public, as it has its own interface
-	StatisticsHandler statsHandler;
+	public StatisticsHandler statsHandler;
 	public Inventory inventory;
 	
 	int targetId;

@@ -64,24 +64,16 @@ public class Consumable extends Item {
 		addQuantity(-1);
 	}
 
-	public boolean isEmpty() {
-		return (quantity < 1) ? true : false;
-	}
+	public boolean isEmpty() { return (quantity < 1) ? true : false; }
 
-	public void addQuantity(int add) {
-		quantity += add;
-	}
+	public void addQuantity(int add) { quantity += add; }
 
-	public void addRegenPoints(int addPoints) {
-		this.regenPoints += addPoints;
-	}
+	public void addRegenPoints(int addPoints) { this.regenPoints += addPoints; }
 	
-	public float getRegenPoints() {
-		return regenPoints;
-	}
+	public float getRegenPoints() { return regenPoints; }
 	
-	public final ConsumableType getConsumableType() {
-		return consumableType;
-	}
+	public float getRegenPerSecond() { return regenPerSecond; }
+	
+	public final ConsumableType getConsumableType() { return consumableType; }
 
 }

@@ -6,7 +6,7 @@ import com.nickan.epiphany.model.inventory.Wearable.WearableType;
 
 public class Inventory {
 	private static final int ROW = 4;
-	private static final int COL = 8;
+	private static final int COL = 4;
 	Item[][] items = new Item[ROW][COL];
 	StatisticsHandler statsHandler;
 	
@@ -21,30 +21,31 @@ public class Inventory {
 	public Inventory(StatisticsHandler statsHandler) {
 		this.statsHandler = statsHandler;
 		clear();
-		
-		helm = new Wearable(WearableType.HELM).setMainAttributeBonus(5, 5, 5, 5, 5).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		
+		testingPuttingItems();
+	}
+	
+	private void testingPuttingItems() {
 		// Testing
-		
-		items[0][0] = new Consumable(ConsumableType.MP_POTION, 15, 3);
-		items[3][0] = new Wearable(WearableType.HELM).setMainAttributeBonus(5, 5, 5, 5, 5).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][1] = new Wearable(WearableType.HELM).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][2] = new Wearable(WearableType.ARMOR).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][3] = new Wearable(WearableType.BOOTS).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][4] = new Wearable(WearableType.LEFT_HAND).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][5] = new Wearable(WearableType.RIGHT_HAND).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][6] = new Wearable(WearableType.GLOVES).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		items[3][7] = new Wearable(WearableType.BOOTS).setMainAttributeBonus(4, 4, 4, 4, 4).
-				setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5);
-		
+		putInInventory(new Consumable(ConsumableType.MP_POTION, 15, 3));
+		putInInventory(new Consumable(ConsumableType.HP_POTION, 50, 5));
+		putInInventory(new Wearable(WearableType.HELM).setMainAttributeBonus(5,
+				5, 5, 5, 5).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.HELM).setMainAttributeBonus(4,
+				4, 4, 4, 4).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.ARMOR).setMainAttributeBonus(
+				4, 4, 4, 4, 4).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.BOOTS).setMainAttributeBonus(
+				4, 4, 4, 4, 4).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.LEFT_HAND)
+				.setMainAttributeBonus(4, 4, 4, 4, 4).setSubAttributeBonus(5,
+						5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.RIGHT_HAND)
+				.setMainAttributeBonus(4, 4, 4, 4, 4).setSubAttributeBonus(5,
+						5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.GLOVES).setMainAttributeBonus(
+				4, 4, 4, 4, 4).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
+		putInInventory(new Wearable(WearableType.BOOTS).setMainAttributeBonus(
+				4, 4, 4, 4, 4).setSubAttributeBonus(5, 5, 5, 5, 5, 5, 5, 5));
 	}
 
 	public void update(float delta) {

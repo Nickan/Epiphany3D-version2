@@ -244,6 +244,10 @@ public class SteeringBehavior {
 		return steeringForceX;
 	}
 	
+	/**
+	 * Set to invert the steering force about x-axis in local space
+	 * @param invertSteeringX
+	 */
 	public void setInvertSteeringX(boolean invertSteeringX) { this.invertSteeringX = invertSteeringX; }
 	public boolean isInvertSteeringX() { return invertSteeringX; }
 	

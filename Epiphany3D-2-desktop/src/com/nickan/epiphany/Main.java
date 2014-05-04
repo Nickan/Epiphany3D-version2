@@ -10,6 +10,8 @@ public class Main {
 		cfg.useGL20 = true;
 		cfg.width = 480;
 		cfg.height = 320;
+//		cfg.width = 340;
+//		cfg.height = 210;
 		
 		new LwjglApplication(new Epiphany(), cfg);
 	}

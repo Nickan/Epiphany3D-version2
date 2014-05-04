@@ -45,10 +45,10 @@ public class StatisticsHandler {
 
 	public StatisticsHandler() {
 		baseStr = 10;
-		baseDex = 10;
-		baseVit = 10;
-		baseAgi = 10;
-		baseWis = 10;
+		baseDex = 11;
+		baseVit = 12;
+		baseAgi = 13;
+		baseWis = 14;
 		
 		resetAddedAttributes();
 		currentHp = getFullHp();

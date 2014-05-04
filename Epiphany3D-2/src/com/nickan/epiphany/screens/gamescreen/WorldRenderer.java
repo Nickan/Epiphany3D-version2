@@ -192,6 +192,7 @@ public class WorldRenderer {
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		Gdx.gl.glClearColor(0, 0, 0, 1.0f);
 		
+		camHandler.update(world.player.getBoundingBox().getCenter(), world.getCamDirection(), delta);
 		// Start of batching
 		modelBatch.begin(perspectiveCam);
 		
@@ -199,9 +200,6 @@ public class WorldRenderer {
 		modelBatch.render(worldModelInstances, environment);
 		
 		modelBatch.end();
-		
-		camHandler.update(world.player.getBoundingBox().getCenter(), world.getCamDirection(), delta);
-//		camHandler.update(world.zombies.get(0).getBoundingBox().getCenter(), world.getCamDirection(), delta);
 		
 		if (debugging) {
 			debug();
